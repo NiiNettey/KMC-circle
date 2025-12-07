@@ -110,7 +110,7 @@ export default function NurseCommentPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-primary" />
-                Nurse Note
+                Nurse / Midwife Notes
               </CardTitle>
               <CardDescription>Add a comment or observation for the mother to see</CardDescription>
             </CardHeader>

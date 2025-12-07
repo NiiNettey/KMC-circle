@@ -195,7 +195,7 @@ export default function NursePatientPage() {
           {/* Nurse Actions */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Nurse Actions</CardTitle>
+              <CardTitle className="text-base">Nurse / Midwife Actions</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-3 gap-2">
               <Button variant="outline" asChild className="h-auto flex-col gap-1 py-3 bg-transparent">

@@ -14,7 +14,7 @@ export function AppHeader({ title, showNotifications = true }: AppHeaderProps) {
   const { user, notifications, currentBaby } = useApp()
 
   const unreadCount = notifications.filter((n) => !n.read).length
-  const displayTitle = title || (currentBaby ? currentBaby.babyName : "Mama's Circle")
+  const displayTitle = title || (currentBaby ? currentBaby.babyName : "MKC Mama's Circle")
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">

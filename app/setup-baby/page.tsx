@@ -97,7 +97,7 @@ export default function SetupBabyPage() {
         createdAt: new Date().toISOString(),
         data: { babyId: newBaby.id },
       })
-      toast.success("Baby profile created! Waiting for nurse approval.")
+      toast.success("Baby profile created! Waiting for nurse / midwife approval.")
     } else {
       toast.success("Baby profile created!")
     }
@@ -292,7 +292,7 @@ export default function SetupBabyPage() {
                         Care Team
                         <AudioButton audioKey="select-nurse" />
                       </CardTitle>
-                      <CardDescription>Select your facility and nurse</CardDescription>
+                      <CardDescription>Select your facility and nurse / midwife </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
@@ -315,7 +315,7 @@ export default function SetupBabyPage() {
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <Label htmlFor="nurse">Assign a Nurse</Label>
+                          <Label htmlFor="nurse">Assign a Nurse / Midwife </Label>
                           <AudioButton audioKey="select-nurse" />
                         </div>
                         <Select value={selectedNurseId || "none"} onValueChange={setSelectedNurseId}>
@@ -332,7 +332,7 @@ export default function SetupBabyPage() {
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground">
-                          Your nurse will be notified and can view baby&apos;s logs
+                          Your Nurse/Midwife will be notified and can view baby&apos;s logs
                         </p>
                       </div>
 
@@ -347,9 +347,9 @@ export default function SetupBabyPage() {
                               <Users className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-primary">Nurse will be notified</p>
+                              <p className="text-sm font-medium text-primary">Nurse/Midwife will be notified</p>
                               <p className="text-xs text-muted-foreground mt-1">
-                                Your selected nurse will receive a request to approve. You&apos;ll be notified when they
+                                Your selected nurse / midwife will receive a request to approve. You&apos;ll be notified when they
                                 respond.
                               </p>
                             </div>

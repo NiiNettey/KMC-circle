@@ -79,9 +79,9 @@ export default function PrivacyPage() {
               <div className="flex items-start gap-3">
                 <Eye className="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div>
-                  <p className="font-medium">Nurse Access</p>
+                  <p className="font-medium">Nurse / Midwife Access</p>
                   <p className="text-sm text-muted-foreground">
-                    Your assigned nurse can view your baby&apos;s logs to provide better care. They cannot modify your
+                    Your assigned nurse or midwife can view your baby&apos;s logs to provide better care. They cannot modify your
                     entries.
                   </p>
                 </div>

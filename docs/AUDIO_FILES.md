@@ -2,7 +2,7 @@
 
 ## Overview
 
-Mama's Circle supports audio instructions for low-literacy users in the following languages:
+KMC Mama's Circle supports audio instructions for low-literacy users in the following languages:
 - **tw** - Twi
 - **ga** - Ga  
 - **ew** - Ewe

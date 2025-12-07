@@ -108,7 +108,7 @@ export default function NurseVitalsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Vital Signs</CardTitle>
-              <CardDescription>Record clinical observations (nurse only)</CardDescription>
+              <CardDescription>Record clinical observations (Nurse / Midwife only)</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">

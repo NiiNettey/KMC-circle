@@ -13,9 +13,9 @@ const nunito = Nunito({
 })
 
 export const metadata: Metadata = {
-  title: "Mama's Circle - KMC Tracker",
+  title: "KMC Mama's Circle",
   description: "Track Kangaroo Mother Care sessions for your preterm baby",
-  generator: "v0.app",
+  generator: "yourtechgees.com",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.svg",

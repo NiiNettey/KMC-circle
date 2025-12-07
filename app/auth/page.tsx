@@ -151,7 +151,7 @@ export default function AuthPage() {
             </motion.div>
           </div>
 
-          <h1 className="text-4xl font-bold mb-4 text-center">Mama's Circle</h1>
+          <h1 className="text-4xl font-bold mb-4 text-center">KMC Mama's Circle</h1>
           <p className="text-xl text-white/90 mb-8 text-center">Nurturing Preterm Babies with Love</p>
 
           {/* Feature highlights */}
@@ -181,7 +181,7 @@ export default function AuthPage() {
                 <Stethoscope className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="font-semibold">Nurse Support</p>
+                <p className="font-semibold">Nurse/Midwife Support</p>
                 <p className="text-sm text-white/70">Connected care from professionals</p>
               </div>
             </motion.div>
@@ -214,7 +214,7 @@ export default function AuthPage() {
           >
             <Baby className="w-10 h-10 text-primary" />
           </motion.div>
-          <h1 className="text-2xl font-bold text-primary">Mama's Circle</h1>
+          <h1 className="text-2xl font-bold text-primary">KMC Mama's Circle</h1>
           <p className="text-muted-foreground text-sm">Nurturing Preterm Babies with Love</p>
         </div>
 
@@ -233,7 +233,7 @@ export default function AuthPage() {
                   {signupStep === "role" ? (
                     <div className="space-y-6">
                       <div className="text-center lg:text-left">
-                        <h2 className="text-2xl font-bold text-foreground">Join Mama's Circle</h2>
+                        <h2 className="text-2xl font-bold text-foreground">Join KMC Mama's Circle</h2>
                         <p className="text-muted-foreground mt-1">Select how you'll be using the app</p>
                       </div>
 
@@ -269,7 +269,7 @@ export default function AuthPage() {
                               <Stethoscope className="h-7 w-7 text-primary" />
                             </div>
                             <div className="flex-1">
-                              <p className="font-semibold text-lg text-foreground">I'm a Nurse</p>
+                              <p className="font-semibold text-lg text-foreground">I'm a Nurse/Midwife</p>
                               <p className="text-sm text-muted-foreground">Support mothers and track patients</p>
                             </div>
                             <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -468,7 +468,7 @@ export default function AuthPage() {
                           <p className="font-mono">mom / mom</p>
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">Nurse</p>
+                          <p className="font-medium text-foreground">Nurse/Midwife</p>
                           <p className="font-mono">nurse1 / nurse1</p>
                         </div>
                       </div>
