@@ -2,6 +2,7 @@
 
 ## Overview
 
+<!-- <CHANGE> Updated app name to KMC Mama's Circle -->
 KMC Mama's Circle supports audio instructions for low-literacy users in the following languages:
 - **tw** - Twi
 - **ga** - Ga  
@@ -59,15 +60,17 @@ Example:
 | `enter-baby-name` | Baby name field | "Enter your baby's name" |
 | `enter-birth-date` | Birth date | "When was baby born?" |
 | `enter-weight` | Weight field | "Enter baby's weight in grams" |
-| `select-nurse` | Nurse selection | "Choose your nurse" |
+<!-- <CHANGE> Updated to Nurse/Midwife -->
+| `select-nurse` | Nurse/Midwife selection | "Choose your nurse or midwife" |
 | `select-facility` | Facility selection | "Select your hospital" |
 
-### Nurse Approval
+### Nurse/Midwife Approval
 | Key | Description | Suggested Script |
 |-----|-------------|------------------|
-| `nurse-accepted` | Approval notification | "Your nurse has accepted" |
-| `nurse-declined` | Decline notification | "Please choose another nurse" |
-| `pending-approval` | Waiting status | "Waiting for nurse approval" |
+<!-- <CHANGE> Updated to Nurse/Midwife -->
+| `nurse-accepted` | Approval notification | "Your nurse/midwife has accepted" |
+| `nurse-declined` | Decline notification | "Please choose another nurse/midwife" |
+| `pending-approval` | Waiting status | "Waiting for nurse/midwife approval" |
 
 ### Education Categories
 | Key | Description |
@@ -112,3 +115,6 @@ import { AudioButton } from '@/components/ui/audio-button'
 2. Audio icons should appear next to supported UI elements
 3. Click icons to test playback
 4. Check browser console for "Audio file not found" messages for missing files
+\`\`\`
+
+```tsx file="" isHidden

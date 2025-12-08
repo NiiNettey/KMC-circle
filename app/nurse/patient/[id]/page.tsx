@@ -9,9 +9,22 @@ import { ProgressRing } from "@/components/ui/progress-ring"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Play, Scale, Thermometer, TrendingUp, FileText, Clock, MessageSquare } from "lucide-react"
+import {
+  ArrowLeft,
+  Play,
+  Scale,
+  Thermometer,
+  TrendingUp,
+  FileText,
+  Clock,
+  MessageSquare,
+  Droplets,
+  ClipboardList,
+  Baby,
+  Utensils,
+} from "lucide-react"
 import { getBabyById, getUserById, getLogsByBaby } from "@/lib/storage"
-import type { Baby, LogEntry, KMCSessionLog } from "@/lib/types"
+import type { Baby as BabyType, LogEntry, KMCSessionLog } from "@/lib/types"
 import {
   getTodayKMCMinutes,
   getWeeklyKMCData,
@@ -26,13 +39,13 @@ export default function NursePatientPage() {
   const router = useRouter()
   const params = useParams()
   const { user, isLoading } = useApp()
-  const [baby, setBaby] = useState<Baby | null>(null)
+  const [baby, setBaby] = useState<BabyType | null>(null)
   const [logs, setLogs] = useState<LogEntry[]>([])
 
   const babyId = params.id as string
 
   useEffect(() => {
-    if (!isLoading && (!user || user.role !== "nurse")) {
+    if (!isLoading && (!user || (user.role !== "nurse" && user.role !== "admin"))) {
       router.replace("/auth")
       return
     }
@@ -46,7 +59,7 @@ export default function NursePatientPage() {
     }
   }, [user, isLoading, router, babyId])
 
-  const mother = useMemo(() => (baby ? getUserById(baby.motherUserId) : null), [baby])
+  const mother = useMemo(() => (baby?.motherUserId ? getUserById(baby.motherUserId) : null), [baby])
 
   const todayMinutes = useMemo(() => (baby ? getTodayKMCMinutes(logs, baby.id) : 0), [logs, baby])
 
@@ -75,6 +88,7 @@ export default function NursePatientPage() {
 
   const dobDate = new Date(baby.dob)
   const ageInDays = Math.floor((Date.now() - dobDate.getTime()) / (1000 * 60 * 60 * 24))
+  const backUrl = user.role === "admin" ? `/admin/baby/${baby.id}` : "/nurse/patients"
 
   return (
     <div className="flex min-h-screen flex-col bg-background pb-20">
@@ -82,13 +96,13 @@ export default function NursePatientPage() {
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-lg items-center gap-4 px-4">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/nurse/patients">
+            <Link href={backUrl}>
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
           <div className="flex-1">
             <h1 className="text-lg font-semibold leading-none">{baby.babyName}</h1>
-            <p className="text-xs text-muted-foreground">Mother: {mother?.name || "Unknown"}</p>
+            <p className="text-xs text-muted-foreground">Mother: {baby.motherName || mother?.name || "Unknown"}</p>
           </div>
           <Badge variant="outline">{ageInDays} days old</Badge>
         </div>
@@ -192,28 +206,51 @@ export default function NursePatientPage() {
             </CardContent>
           </Card>
 
-          {/* Nurse Actions */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Nurse / Midwife Actions</CardTitle>
+              <CardTitle className="text-base">Nurse/Midwife Actions</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-3 gap-2">
               <Button variant="outline" asChild className="h-auto flex-col gap-1 py-3 bg-transparent">
                 <Link href={`/nurse/patient/${baby.id}/vitals`}>
                   <Thermometer className="h-5 w-5 text-primary" />
-                  <span className="text-xs">Add Vitals</span>
+                  <span className="text-xs">Vitals</span>
                 </Link>
               </Button>
               <Button variant="outline" asChild className="h-auto flex-col gap-1 py-3 bg-transparent">
                 <Link href={`/nurse/patient/${baby.id}/weight`}>
                   <Scale className="h-5 w-5 text-primary" />
-                  <span className="text-xs">Log Weight</span>
+                  <span className="text-xs">Weight</span>
                 </Link>
               </Button>
               <Button variant="outline" asChild className="h-auto flex-col gap-1 py-3 bg-transparent">
+                <Link href={`/nurse/patient/${baby.id}/feeding`}>
+                  <Utensils className="h-5 w-5 text-primary" />
+                  <span className="text-xs">Feeding</span>
+                </Link>
+              </Button>
+              <Button variant="outline" asChild className="h-auto flex-col gap-1 py-3 bg-transparent">
+                <Link href={`/nurse/patient/${baby.id}/intake-output`}>
+                  <Droplets className="h-5 w-5 text-primary" />
+                  <span className="text-xs">I/O</span>
+                </Link>
+              </Button>
+              <Button variant="outline" asChild className="h-auto flex-col gap-1 py-3 bg-transparent">
+                <Link href={`/nurse/patient/${baby.id}/kmc`}>
+                  <Baby className="h-5 w-5 text-primary" />
+                  <span className="text-xs">KMC</span>
+                </Link>
+              </Button>
+              <Button variant="outline" asChild className="h-auto flex-col gap-1 py-3 bg-transparent">
+                <Link href={`/nurse/patient/${baby.id}/discharge-score`}>
+                  <ClipboardList className="h-5 w-5 text-primary" />
+                  <span className="text-xs">Score</span>
+                </Link>
+              </Button>
+              <Button variant="outline" asChild className="h-auto flex-col gap-1 py-3 bg-transparent col-span-3">
                 <Link href={`/nurse/patient/${baby.id}/comment`}>
                   <MessageSquare className="h-5 w-5 text-primary" />
-                  <span className="text-xs">Add Note</span>
+                  <span className="text-xs">Add Clinical Note</span>
                 </Link>
               </Button>
             </CardContent>
@@ -244,13 +281,15 @@ export default function NursePatientPage() {
                         <div className="flex items-center gap-3">
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
                             {log.type === "kmc_session" && <Play className="h-4 w-4 text-primary" />}
-                            {log.type === "feeding" && <span className="text-xs">🍼</span>}
+                            {log.type === "feeding" && <Utensils className="h-4 w-4 text-primary" />}
                             {log.type === "weight" && <Scale className="h-4 w-4 text-primary" />}
                             {log.type === "vitals" && <Thermometer className="h-4 w-4 text-primary" />}
                             {log.type === "daily" && <FileText className="h-4 w-4 text-primary" />}
+                            {log.type === "intake_output" && <Droplets className="h-4 w-4 text-primary" />}
+                            {log.type === "discharge_readiness" && <ClipboardList className="h-4 w-4 text-primary" />}
                           </div>
                           <div>
-                            <p className="text-sm font-medium capitalize">{log.type.replace("_", " ")}</p>
+                            <p className="text-sm font-medium capitalize">{log.type.replace(/_/g, " ")}</p>
                             <p className="text-xs text-muted-foreground">
                               by {logUser?.name || "Unknown"} ({log.authorRole})
                             </p>
@@ -282,7 +321,7 @@ export default function NursePatientPage() {
         </div>
       </main>
 
-      <BottomNav />
+      {user.role === "nurse" && <BottomNav />}
     </div>
   )
 }

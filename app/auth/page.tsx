@@ -51,7 +51,9 @@ export default function AuthPage() {
       toast.success("Welcome back!")
       const foundUser = getUserByUsername(loginUsername)
 
-      if (foundUser?.role === "nurse") {
+      if (foundUser?.role === "admin") {
+        router.push("/admin")
+      } else if (foundUser?.role === "nurse") {
         router.push("/nurse")
       } else if (foundUser) {
         const userBabies = getBabiesByMother(foundUser.id)
@@ -151,7 +153,7 @@ export default function AuthPage() {
             </motion.div>
           </div>
 
-          <h1 className="text-4xl font-bold mb-4 text-center">KMC Mama's Circle</h1>
+          <h1 className="text-4xl font-bold mb-4 text-center">KMC Mama&apos;s Circle</h1>
           <p className="text-xl text-white/90 mb-8 text-center">Nurturing Preterm Babies with Love</p>
 
           {/* Feature highlights */}
@@ -214,7 +216,7 @@ export default function AuthPage() {
           >
             <Baby className="w-10 h-10 text-primary" />
           </motion.div>
-          <h1 className="text-2xl font-bold text-primary">KMC Mama's Circle</h1>
+          <h1 className="text-2xl font-bold text-primary">KMC Mama&apos;s Circle</h1>
           <p className="text-muted-foreground text-sm">Nurturing Preterm Babies with Love</p>
         </div>
 
@@ -233,8 +235,8 @@ export default function AuthPage() {
                   {signupStep === "role" ? (
                     <div className="space-y-6">
                       <div className="text-center lg:text-left">
-                        <h2 className="text-2xl font-bold text-foreground">Join KMC Mama's Circle</h2>
-                        <p className="text-muted-foreground mt-1">Select how you'll be using the app</p>
+                        <h2 className="text-2xl font-bold text-foreground">Join KMC Mama&apos;s Circle</h2>
+                        <p className="text-muted-foreground mt-1">Select how you&apos;ll be using the app</p>
                       </div>
 
                       <div className="space-y-3">
@@ -250,8 +252,8 @@ export default function AuthPage() {
                               <User className="h-7 w-7 text-white" />
                             </div>
                             <div className="flex-1">
-                              <p className="font-semibold text-lg text-foreground">I'm a Parent</p>
-                              <p className="text-sm text-muted-foreground">Track my baby's KMC journey</p>
+                              <p className="font-semibold text-lg text-foreground">I&apos;m a Parent</p>
+                              <p className="text-sm text-muted-foreground">Track my baby&apos;s KMC journey</p>
                             </div>
                             <ChevronRight className="h-5 w-5 text-muted-foreground" />
                           </div>
@@ -269,7 +271,7 @@ export default function AuthPage() {
                               <Stethoscope className="h-7 w-7 text-primary" />
                             </div>
                             <div className="flex-1">
-                              <p className="font-semibold text-lg text-foreground">I'm a Nurse/Midwife</p>
+                              <p className="font-semibold text-lg text-foreground">I&apos;m a Nurse/Midwife</p>
                               <p className="text-sm text-muted-foreground">Support mothers and track patients</p>
                             </div>
                             <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -312,7 +314,7 @@ export default function AuthPage() {
                           </div>
                           <div>
                             <h2 className="text-xl font-bold text-foreground">
-                              {signupRole === "nurse" ? "Nurse Registration" : "Parent Registration"}
+                              {signupRole === "nurse" ? "Nurse/Midwife Registration" : "Parent Registration"}
                             </h2>
                             <p className="text-sm text-muted-foreground">
                               {signupRole === "nurse"
@@ -459,23 +461,8 @@ export default function AuthPage() {
                       {isLoading ? "Signing in..." : "Sign In"}
                     </Button>
 
-                    {/* Demo accounts info */}
-                    <div className="rounded-xl bg-primary/5 border border-primary/10 p-4 text-center">
-                      <p className="text-sm font-medium text-foreground mb-2">Demo Accounts</p>
-                      <div className="flex justify-center gap-6 text-xs text-muted-foreground">
-                        <div>
-                          <p className="font-medium text-foreground">Parent</p>
-                          <p className="font-mono">mom / mom</p>
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">Nurse/Midwife</p>
-                          <p className="font-mono">nurse1 / nurse1</p>
-                        </div>
-                      </div>
-                    </div>
-
                     <p className="text-center text-muted-foreground">
-                      Don't have an account?{" "}
+                      Don&apos;t have an account?{" "}
                       <button
                         type="button"
                         onClick={() => setMode("signup")}
@@ -484,16 +471,50 @@ export default function AuthPage() {
                         Sign up
                       </button>
                     </p>
+
+                    <div className="pt-4 border-t border-border/50">
+                      <p className="text-xs text-muted-foreground text-center mb-3">Demo Accounts</p>
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLoginUsername("mom")
+                            setLoginPassword("mom")
+                          }}
+                          className="p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                        >
+                          <p className="font-medium">Parent</p>
+                          <p className="text-muted-foreground">mom / mom</p>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLoginUsername("nurse1")
+                            setLoginPassword("nurse1")
+                          }}
+                          className="p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                        >
+                          <p className="font-medium">Nurse</p>
+                          <p className="text-muted-foreground">nurse1</p>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLoginUsername("admin")
+                            setLoginPassword("admin")
+                          }}
+                          className="p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                        >
+                          <p className="font-medium">Admin</p>
+                          <p className="text-muted-foreground">admin</p>
+                        </button>
+                      </div>
+                    </div>
                   </form>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 text-center text-xs text-muted-foreground">
-          <p>Supporting preterm babies with love and care</p>
         </div>
       </div>
     </div>

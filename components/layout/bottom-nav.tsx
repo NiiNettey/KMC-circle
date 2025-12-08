@@ -10,7 +10,7 @@ const parentNavItems = [
   { href: "/dashboard", icon: Home, label: "Home" },
   { href: "/track", icon: ClipboardList, label: "Track" },
   { href: "/learn", icon: BookOpen, label: "Learn" },
-  { href: "/circle", icon: Users, label: "Circle", disabled: true },
+  { href: "/circle", icon: Users, label: "Circle" }, // Enabled Circle tab
   { href: "/profile", icon: User, label: "Profile" },
 ]
 

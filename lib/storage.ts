@@ -1,17 +1,32 @@
-import type { User, Baby, LogEntry, EduItem, TimerState, Notification, Milestone } from "./types"
+import type {
+  User,
+  Baby,
+  LogEntry,
+  EduItem,
+  TimerState,
+  Notification,
+  Milestone,
+  Post,
+  Comment,
+  ForumType,
+  ReactionType,
+} from "./types"
 
 // Storage keys
 const KEYS = {
-  USERS: "kmc_users_v0",
-  BABIES: "kmc_babies_v0",
-  LOGS: "kmc_logs_v0",
+  USERS: "kmc_users_v1", // bumped version for new schema
+  BABIES: "kmc_babies_v1",
+  LOGS: "kmc_logs_v1",
   EDU: "kmc_edu_v0",
   MILESTONES: "kmc_milestones_v0",
   TIMER: "kmc_timer_v0",
-  CURRENT_USER: "kmc_current_user_v0",
+  CURRENT_USER: "kmc_current_user_v1",
   NOTIFICATIONS: "kmc_notifications_v0",
-  INITIALIZED: "kmc_initialized_v0",
+  INITIALIZED: "kmc_initialized_v1",
 }
+
+const POSTS_KEY = "kmc_posts_v0"
+const COMMENTS_KEY = "kmc_comments_v0"
 
 // Generic storage helpers
 function getItem<T>(key: string, defaultValue: T): T {
@@ -112,6 +127,36 @@ export function updateBaby(baby: Baby): void {
     babies[index] = baby
     setBabies(babies)
   }
+}
+
+export function getReferredBabies(): Baby[] {
+  return getBabies().filter((b) => b.status === "referred")
+}
+
+export function getAllBabiesForAdmin(): Baby[] {
+  return getBabies()
+}
+
+export function getBabiesReadyForDischarge(): Baby[] {
+  return getBabies().filter((b) => b.status === "ready_for_discharge")
+}
+
+export function getBabyByClaimCode(code: string): Baby | undefined {
+  return getBabies().find((b) => b.claimCode?.toUpperCase() === code.toUpperCase())
+}
+
+export function generateClaimCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+  let code = "KMC-"
+  for (let i = 0; i < 4; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  // Ensure uniqueness
+  const existing = getBabies().map((b) => b.claimCode)
+  if (existing.includes(code)) {
+    return generateClaimCode()
+  }
+  return code
 }
 
 // Logs
@@ -223,4 +268,111 @@ export function isInitialized(): boolean {
 
 export function markInitialized(): void {
   setItem(KEYS.INITIALIZED, true)
+}
+
+export function getAllNurses(): User[] {
+  return getUsers().filter((u) => u.role === "nurse")
+}
+
+export function getNurseWorkload(nurseId: string): number {
+  return getBabies().filter(
+    (b) => b.assignedNurseId === nurseId && (b.status === "assigned" || b.status === "ready_for_discharge"),
+  ).length
+}
+
+// Posts
+export function getPosts(): Post[] {
+  return getItem<Post[]>(POSTS_KEY, [])
+}
+
+export function setPosts(posts: Post[]): void {
+  setItem(POSTS_KEY, posts)
+}
+
+export function getPostsByForum(forumType: ForumType): Post[] {
+  return getPosts()
+    .filter((p) => p.forumType === forumType)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+}
+
+export function getPostById(id: string): Post | undefined {
+  return getPosts().find((p) => p.id === id)
+}
+
+export function addPost(post: Post): void {
+  const posts = getPosts()
+  posts.push(post)
+  setPosts(posts)
+}
+
+export function updatePost(post: Post): void {
+  const posts = getPosts()
+  const index = posts.findIndex((p) => p.id === post.id)
+  if (index !== -1) {
+    posts[index] = post
+    setPosts(posts)
+  }
+}
+
+export function toggleReaction(postId: string, reactionType: ReactionType, userId: string): void {
+  const posts = getPosts()
+  const post = posts.find((p) => p.id === postId)
+  if (post) {
+    if (!post.reactions[reactionType]) {
+      post.reactions[reactionType] = []
+    }
+    const userIndex = post.reactions[reactionType].indexOf(userId)
+    if (userIndex === -1) {
+      post.reactions[reactionType].push(userId)
+    } else {
+      post.reactions[reactionType].splice(userIndex, 1)
+    }
+    setPosts(posts)
+  }
+}
+
+// Comments
+export function getComments(): Comment[] {
+  return getItem<Comment[]>(COMMENTS_KEY, [])
+}
+
+export function setComments(comments: Comment[]): void {
+  setItem(COMMENTS_KEY, comments)
+}
+
+export function getCommentsByPost(postId: string): Comment[] {
+  return getComments()
+    .filter((c) => c.postId === postId)
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+}
+
+export function addComment(comment: Comment): void {
+  const comments = getComments()
+  comments.push(comment)
+  setComments(comments)
+
+  // Update post comment count
+  const posts = getPosts()
+  const post = posts.find((p) => p.id === comment.postId)
+  if (post) {
+    post.commentCount = (post.commentCount || 0) + 1
+    setPosts(posts)
+  }
+}
+
+export function toggleCommentReaction(commentId: string, reactionType: ReactionType, userId: string): void {
+  const comments = getComments()
+  const comment = comments.find((c) => c.id === commentId)
+  if (comment) {
+    if (!comment.reactions[reactionType]) {
+      comment.reactions[reactionType] = []
+    }
+    const userIndex = comment.reactions[reactionType].indexOf(userId)
+    if (userIndex === -1) {
+      comment.reactions[reactionType].push(userId)
+    } else {
+      comment.reactions[reactionType].splice(userIndex, 1)
+    }
+    setComments(comments)
+  }
 }

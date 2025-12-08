@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 import { ArrowLeft, Save } from "lucide-react"
 import type { VitalsLog } from "@/lib/types"
@@ -30,11 +31,17 @@ export default function NurseVitalsPage() {
   const [respiratoryRate, setRespiratoryRate] = useState("")
   const [oxygenSat, setOxygenSat] = useState("")
   const [breathingSupport, setBreathingSupport] = useState("")
+  const [bpSystolic, setBpSystolic] = useState("")
+  const [bpDiastolic, setBpDiastolic] = useState("")
+  const [glucose, setGlucose] = useState("")
+  const [bilirubin, setBilirubin] = useState("")
+  const [phototherapy, setPhototherapy] = useState(false)
+  const [painScore, setPainScore] = useState("")
   const [notes, setNotes] = useState("")
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
-    if (!isLoading && (!user || user.role !== "nurse")) {
+    if (!isLoading && (!user || (user.role !== "nurse" && user.role !== "admin"))) {
       router.replace("/auth")
       return
     }
@@ -55,6 +62,14 @@ export default function NurseVitalsPage() {
       return
     }
 
+    // Calculate MAP if BP provided
+    let map: number | null = null
+    if (bpSystolic && bpDiastolic) {
+      const sys = Number.parseFloat(bpSystolic)
+      const dia = Number.parseFloat(bpDiastolic)
+      map = Math.round((sys + 2 * dia) / 3)
+    }
+
     const logData: Omit<VitalsLog, "id" | "timestamp"> = {
       babyId: baby.id,
       authorUserId: user.id,
@@ -69,6 +84,13 @@ export default function NurseVitalsPage() {
         respiratoryRate: respiratoryRate ? Number.parseInt(respiratoryRate) : null,
         oxygenSaturation: oxygenSat ? Number.parseInt(oxygenSat) : null,
         breathingSupport: breathingSupport || null,
+        bloodPressureSystolic: bpSystolic ? Number.parseInt(bpSystolic) : null,
+        bloodPressureDiastolic: bpDiastolic ? Number.parseInt(bpDiastolic) : null,
+        bloodPressureMAP: map,
+        glucose: glucose ? Number.parseFloat(glucose) : null,
+        bilirubin: bilirubin ? Number.parseFloat(bilirubin) : null,
+        phototherapyGiven: phototherapy,
+        painScore: painScore ? Number.parseInt(painScore) : null,
         notes,
       },
     }
@@ -108,7 +130,7 @@ export default function NurseVitalsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Vital Signs</CardTitle>
-              <CardDescription>Record clinical observations (Nurse / Midwife only)</CardDescription>
+              <CardDescription>NICU/Baby Unit Chart - Record clinical observations</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -172,7 +194,7 @@ export default function NurseVitalsPage() {
                     <Input
                       id="oxygen-sat"
                       type="number"
-                      placeholder="98"
+                      placeholder="95"
                       value={oxygenSat}
                       onChange={(e) => setOxygenSat(e.target.value)}
                       className="h-12"
@@ -182,11 +204,86 @@ export default function NurseVitalsPage() {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="bp-systolic">BP Systolic (mmHg)</Label>
+                    <Input
+                      id="bp-systolic"
+                      type="number"
+                      placeholder="60"
+                      value={bpSystolic}
+                      onChange={(e) => setBpSystolic(e.target.value)}
+                      className="h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bp-diastolic">BP Diastolic (mmHg)</Label>
+                    <Input
+                      id="bp-diastolic"
+                      type="number"
+                      placeholder="35"
+                      value={bpDiastolic}
+                      onChange={(e) => setBpDiastolic(e.target.value)}
+                      className="h-12"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="glucose">Glucose/RBS (mmol/L)</Label>
+                    <Input
+                      id="glucose"
+                      type="number"
+                      step="0.1"
+                      placeholder="4.5"
+                      value={glucose}
+                      onChange={(e) => setGlucose(e.target.value)}
+                      className="h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bilirubin">Bilirubin/TcB</Label>
+                    <Input
+                      id="bilirubin"
+                      type="number"
+                      step="0.1"
+                      placeholder=""
+                      value={bilirubin}
+                      onChange={(e) => setBilirubin(e.target.value)}
+                      className="h-12"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="pain-score">Pain Score (NIPS)</Label>
+                    <Input
+                      id="pain-score"
+                      type="number"
+                      placeholder="0-7"
+                      value={painScore}
+                      onChange={(e) => setPainScore(e.target.value)}
+                      className="h-12"
+                      min="0"
+                      max="7"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Phototherapy Given?</Label>
+                    <div className="flex items-center h-12 space-x-2">
+                      <Switch checked={phototherapy} onCheckedChange={setPhototherapy} />
+                      <span className="text-sm">{phototherapy ? "Yes" : "No"}</span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="breathing-support">Breathing Support</Label>
                   <Input
                     id="breathing-support"
-                    placeholder="e.g., Room air, CPAP, Oxygen"
+                    placeholder="e.g., Room air, CPAP, O2 1L/min"
                     value={breathingSupport}
                     onChange={(e) => setBreathingSupport(e.target.value)}
                     className="h-12"

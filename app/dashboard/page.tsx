@@ -109,8 +109,8 @@ export default function DashboardPage() {
                     <AlertCircle className="h-5 w-5 text-amber-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">Awaiting Nurse / Midwife Approval</p>
-                    <p className="text-xs text-muted-foreground">Your nurse / midwife will review your request soon</p>
+                    <p className="text-sm font-medium">Awaiting Nurse Approval</p>
+                    <p className="text-xs text-muted-foreground">Your nurse will review your request soon</p>
                   </div>
                 </CardContent>
               </Card>

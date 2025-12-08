@@ -1,11 +1,11 @@
-import type { User, EduItem, Baby, Log } from "./types"
+import type { User, EduItem, Baby, LogEntry } from "./types"
 
 export const SEED_NURSES: User[] = [
   {
     id: "nurse-acc-001",
     username: "nurse1",
     password: "nurse1",
-    name: "Nurse Adwoa",
+    name: "Midwife Adwoa",
     role: "nurse",
     facility: "Korle Bu General",
     locale: "en",
@@ -25,7 +25,7 @@ export const SEED_NURSES: User[] = [
     id: "nurse-acc-003",
     username: "nurse3",
     password: "nurse3",
-    name: "Nurse Abena",
+    name: "Midwife Abena",
     role: "nurse",
     facility: "Tamale Regional",
     locale: "en",
@@ -43,6 +43,17 @@ export const SEED_NURSES: User[] = [
   },
 ]
 
+export const SEED_ADMIN: User = {
+  id: "admin-acc-001",
+  username: "admin",
+  password: "admin",
+  name: "Ward Administrator",
+  role: "admin",
+  facility: "Korle Bu General",
+  locale: "en",
+  createdAt: new Date().toISOString(),
+}
+
 export const DEMO_PARENT: User = {
   id: "user-demo-mom-001",
   username: "mom",
@@ -56,10 +67,15 @@ export const DEMO_PARENT: User = {
 export const DEMO_BABY: Baby = {
   id: "baby-demo-001",
   babyName: "Baby Kofi",
-  dob: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(), // 2 weeks ago
+  dob: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+  gender: "male",
   gestationalAgeWeeks: 32,
   birthWeightGrams: 1800,
   currentWeightGrams: 1950,
+  birthLengthCm: 42,
+  currentLengthCm: 43,
+  birthHeadCircumferenceCm: 28,
+  currentHeadCircumferenceCm: 29,
   motherUserId: "user-demo-mom-001",
   assignedNurseId: "nurse-acc-001",
   status: "assigned",
@@ -68,9 +84,43 @@ export const DEMO_BABY: Baby = {
   createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
   photoUrl: null,
   colorTag: "purple",
+  claimCode: null, // Already claimed by mom
+  motherName: "Demo Mama",
+  motherPhone: "0241234567",
+  admissionDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+  admissionWeightGrams: 1800,
+  referralSource: "Labor Ward",
 }
 
-export const DEMO_LOGS: Log[] = [
+export const DEMO_REFERRED_BABY: Baby = {
+  id: "baby-demo-002",
+  babyName: "Baby Ama",
+  dob: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+  gender: "female",
+  gestationalAgeWeeks: 30,
+  birthWeightGrams: 1400,
+  currentWeightGrams: 1380,
+  birthLengthCm: 38,
+  currentLengthCm: 38,
+  birthHeadCircumferenceCm: 26,
+  currentHeadCircumferenceCm: 26,
+  motherUserId: null, // Not claimed yet
+  assignedNurseId: null,
+  status: "referred",
+  facility: "Korle Bu General",
+  language: "en",
+  createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+  photoUrl: null,
+  colorTag: "white",
+  claimCode: "KMC-A3X7", // For parent to claim later
+  motherName: "Akua Mensah",
+  motherPhone: "0209876543",
+  admissionDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+  admissionWeightGrams: 1400,
+  referralSource: "Neonatal Unit",
+}
+
+export const DEMO_LOGS: LogEntry[] = [
   {
     id: "log-demo-001",
     babyId: "baby-demo-001",
@@ -100,6 +150,7 @@ export const DEMO_LOGS: Log[] = [
     data: {
       dateTime: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
       type: "breast" as const,
+      route: "PO" as const,
       amountMl: null,
       notes: "",
     },
@@ -133,7 +184,60 @@ export const DEMO_LOGS: Log[] = [
     data: {
       dateTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
       weightGrams: 1920,
+      lengthCm: 42.5,
+      headCircumferenceCm: 28.5,
       notes: "Good weight gain",
+    },
+  },
+  {
+    id: "log-demo-005",
+    babyId: "baby-demo-001",
+    authorUserId: "nurse-acc-001",
+    authorRole: "nurse" as const,
+    type: "vitals" as const,
+    timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+    nurseComment: null,
+    immutable: false,
+    data: {
+      dateTime: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+      temperature: 36.8,
+      heartRate: 142,
+      respiratoryRate: 48,
+      oxygenSaturation: 96,
+      breathingSupport: "Room air",
+      bloodPressureSystolic: null,
+      bloodPressureDiastolic: null,
+      bloodPressureMAP: null,
+      glucose: 4.2,
+      bilirubin: null,
+      phototherapyGiven: false,
+      painScore: 0,
+      notes: "Stable",
+    },
+  },
+  {
+    id: "log-demo-006",
+    babyId: "baby-demo-001",
+    authorUserId: "nurse-acc-001",
+    authorRole: "nurse" as const,
+    type: "discharge_readiness" as const,
+    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    nurseComment: null,
+    immutable: false,
+    data: {
+      dateTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      day: 13,
+      socioEconomicSupport: 2,
+      milkProduction: 1,
+      positioningAttachment: 2,
+      sucklingAbility: 1,
+      motherConfidence: 2,
+      weightGainGramsPerDay: 18,
+      weightGainScore: 2,
+      totalScore: 10,
+      breastfeedingStarted: true,
+      kmcStarted: true,
+      notes: "Making good progress",
     },
   },
 ]

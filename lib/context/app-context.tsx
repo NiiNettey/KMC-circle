@@ -3,7 +3,15 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react"
 import type { User, Baby, LogEntry, TimerState, Notification, Language, UserRole } from "@/lib/types"
 import * as storage from "@/lib/storage"
-import { SEED_NURSES, DEMO_PARENT, SEED_EDU_CONTENT, DEMO_BABY, DEMO_LOGS } from "@/lib/seed-data"
+import {
+  SEED_NURSES,
+  SEED_ADMIN,
+  DEMO_PARENT,
+  SEED_EDU_CONTENT,
+  DEMO_BABY,
+  DEMO_REFERRED_BABY,
+  DEMO_LOGS,
+} from "@/lib/seed-data"
 import { v4 as uuid } from "uuid"
 
 interface AppContextType {
@@ -29,6 +37,12 @@ interface AppContextType {
   addBaby: (baby: Omit<Baby, "id" | "createdAt">) => Baby
   updateBaby: (baby: Baby) => void
 
+  // Admin baby functions
+  getAllBabies: () => Baby[]
+  getReferredBabies: () => Baby[]
+  assignBabyToNurse: (babyId: string, nurseId: string) => void
+  claimBaby: (claimCode: string) => { success: boolean; baby?: Baby; error?: string }
+
   // Logs
   logs: LogEntry[]
   addLog: (log: Omit<LogEntry, "id" | "timestamp">) => void
@@ -46,9 +60,13 @@ interface AppContextType {
 
   // Nurses (for dropdown)
   nurses: User[]
+  getNurseWorkload: (nurseId: string) => number
 
   // Audio support
   playAudio: (key: string) => void
+
+  // Refresh data
+  refreshBabies: () => void
 }
 
 const AppContext = createContext<AppContextType | null>(null)
@@ -73,9 +91,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const initializeApp = () => {
       // Seed data if not initialized
       if (!storage.isInitialized()) {
-        storage.setUsers([...SEED_NURSES, DEMO_PARENT])
+        storage.setUsers([...SEED_NURSES, SEED_ADMIN, DEMO_PARENT])
         storage.setEduContent(SEED_EDU_CONTENT)
-        storage.setBabies([DEMO_BABY])
+        storage.setBabies([DEMO_BABY, DEMO_REFERRED_BABY])
         storage.setLogs(DEMO_LOGS)
         storage.markInitialized()
       }
@@ -85,9 +103,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (currentUser) {
         setUser(currentUser)
 
-        // Load babies based on role
         if (currentUser.role === "parent") {
           setBabies(storage.getBabiesByMother(currentUser.id))
+        } else if (currentUser.role === "admin") {
+          setBabies(storage.getAllBabiesForAdmin())
         } else {
           setBabies(storage.getBabiesByNurse(currentUser.id))
         }
@@ -120,6 +139,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const currentBaby = babies.find((b) => b.id === currentBabyId) || babies[0] || null
 
+  const refreshBabies = useCallback(() => {
+    if (!user) return
+    if (user.role === "parent") {
+      setBabies(storage.getBabiesByMother(user.id))
+    } else if (user.role === "admin") {
+      setBabies(storage.getAllBabiesForAdmin())
+    } else {
+      const assignedBabies = storage.getBabiesByNurse(user.id)
+      const pendingBabies = storage.getPendingBabiesForNurse(user.id)
+      setBabies([...assignedBabies, ...pendingBabies])
+    }
+    setLogs(storage.getLogs())
+  }, [user])
+
   const login = useCallback((username: string, password: string) => {
     const foundUser = storage.getUserByUsername(username)
 
@@ -134,9 +167,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     storage.setCurrentUser(foundUser)
     setUser(foundUser)
 
-    // Load user's babies
     if (foundUser.role === "parent") {
       setBabies(storage.getBabiesByMother(foundUser.id))
+    } else if (foundUser.role === "admin") {
+      setBabies(storage.getAllBabiesForAdmin())
     } else {
       const assignedBabies = storage.getBabiesByNurse(foundUser.id)
       const pendingBabies = storage.getPendingBabiesForNurse(foundUser.id)
@@ -221,6 +255,73 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateBabyFn = useCallback((baby: Baby) => {
     storage.updateBaby(baby)
     setBabies((prev) => prev.map((b) => (b.id === baby.id ? baby : b)))
+  }, [])
+
+  const getAllBabies = useCallback(() => {
+    return storage.getAllBabiesForAdmin()
+  }, [])
+
+  const getReferredBabies = useCallback(() => {
+    return storage.getReferredBabies()
+  }, [])
+
+  const assignBabyToNurse = useCallback((babyId: string, nurseId: string) => {
+    const baby = storage.getBabyById(babyId)
+    const nurse = storage.getUserById(nurseId)
+    if (!baby || !nurse) return
+
+    const updatedBaby: Baby = {
+      ...baby,
+      assignedNurseId: nurseId,
+      status: "assigned",
+    }
+    storage.updateBaby(updatedBaby)
+    setBabies((prev) => prev.map((b) => (b.id === babyId ? updatedBaby : b)))
+
+    // Notify nurse
+    const notification: Notification = {
+      id: uuid(),
+      userId: nurseId,
+      type: "baby_assigned",
+      title: "New Patient Assigned",
+      message: `${baby.babyName} has been assigned to your care.`,
+      read: false,
+      createdAt: new Date().toISOString(),
+      data: { babyId },
+    }
+    storage.addNotification(notification)
+  }, [])
+
+  const claimBaby = useCallback(
+    (claimCode: string) => {
+      if (!user || user.role !== "parent") {
+        return { success: false, error: "Only parents can claim babies" }
+      }
+
+      const baby = storage.getBabyByClaimCode(claimCode)
+      if (!baby) {
+        return { success: false, error: "Invalid claim code" }
+      }
+
+      if (baby.motherUserId) {
+        return { success: false, error: "This baby has already been claimed" }
+      }
+
+      const updatedBaby: Baby = {
+        ...baby,
+        motherUserId: user.id,
+        claimCode: null, // Clear the claim code after claiming
+      }
+      storage.updateBaby(updatedBaby)
+      setBabies((prev) => [...prev, updatedBaby])
+
+      return { success: true, baby: updatedBaby }
+    },
+    [user],
+  )
+
+  const getNurseWorkload = useCallback((nurseId: string) => {
+    return storage.getNurseWorkload(nurseId)
   }, [])
 
   const addLogFn = useCallback((logData: Omit<LogEntry, "id" | "timestamp">) => {
@@ -340,6 +441,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setCurrentBabyId,
         addBaby: addBabyFn,
         updateBaby: updateBabyFn,
+        getAllBabies,
+        getReferredBabies,
+        assignBabyToNurse,
+        claimBaby,
         logs,
         addLog: addLogFn,
         getLogsByBaby: getLogsByBabyFn,
@@ -350,7 +455,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         addNotification: addNotificationFn,
         markNotificationRead: markNotificationReadFn,
         nurses,
+        getNurseWorkload,
         playAudio,
+        refreshBabies,
       }}
     >
       {children}

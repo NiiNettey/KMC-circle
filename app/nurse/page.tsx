@@ -35,7 +35,7 @@ export default function NurseDashboardPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background pb-20">
-      <AppHeader title={`Hello, ${user.name}`} />
+      <AppHeader title={`Hello, ${user.name}`} subtitle="Nurse/Midwife Dashboard" />
 
       <main className="flex-1 p-4">
         <div className="mx-auto max-w-lg space-y-4">

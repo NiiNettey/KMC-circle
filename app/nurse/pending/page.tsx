@@ -49,7 +49,7 @@ export default function NursePendingPage() {
       id: uuid(),
       userId: baby.motherUserId,
       type: "nurse_accepted",
-      title: "Nurse Accepted!",
+      title: "Nurse/Midwife Accepted!",
       message: `${user?.name} has accepted to care for ${baby.babyName}`,
       read: false,
       createdAt: new Date().toISOString(),
@@ -78,8 +78,8 @@ export default function NursePendingPage() {
       id: uuid(),
       userId: baby.motherUserId,
       type: "nurse_declined",
-      title: "Please Choose Another Nurse / Midwife",
-      message: message || `${user?.name} is unable to accept at this time. Please select another Nurse / Midwife`,
+      title: "Please Choose Another Nurse/Midwife",
+      message: message || `${user?.name} is unable to accept at this time. Please select another nurse/midwife.`,
       read: false,
       createdAt: new Date().toISOString(),
       data: { babyId: baby.id },
@@ -101,7 +101,7 @@ export default function NursePendingPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background pb-20">
-      <AppHeader title="Pending Approvals" />
+      <AppHeader title="Pending Approvals" subtitle="Nurse/Midwife Requests" />
 
       <main className="flex-1 p-4">
         <div className="mx-auto max-w-lg space-y-4">

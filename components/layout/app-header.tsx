@@ -7,29 +7,32 @@ import { Badge } from "@/components/ui/badge"
 
 interface AppHeaderProps {
   title?: string
+  subtitle?: string
   showNotifications?: boolean
 }
 
-export function AppHeader({ title, showNotifications = true }: AppHeaderProps) {
+export function AppHeader({ title, subtitle, showNotifications = true }: AppHeaderProps) {
   const { user, notifications, currentBaby } = useApp()
 
   const unreadCount = notifications.filter((n) => !n.read).length
-  const displayTitle = title || (currentBaby ? currentBaby.babyName : "MKC Mama's Circle")
+  const displayTitle = title || (currentBaby ? currentBaby.babyName : "KMC Mama's Circle")
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <span className="text-sm font-bold">{user?.name?.charAt(0) || "M"}</span>
+            <span className="text-sm font-bold">{user?.name?.charAt(0) || "K"}</span>
           </div>
           <div>
             <h1 className="text-lg font-semibold leading-none">{displayTitle}</h1>
-            {currentBaby && (
+            {subtitle ? (
+              <p className="text-xs text-muted-foreground">{subtitle}</p>
+            ) : currentBaby ? (
               <p className="text-xs text-muted-foreground">
-                {currentBaby.status === "pending_nurse_approval" ? "Awaiting nurse" : "With nurse"}
+                {currentBaby.status === "pending_nurse_approval" ? "Awaiting nurse/midwife" : "With nurse/midwife"}
               </p>
-            )}
+            ) : null}
           </div>
         </div>
 

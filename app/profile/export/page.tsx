@@ -157,7 +157,7 @@ export default function ParentExportPage() {
                     <p className="font-semibold">{currentBaby.facility}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Assigned Nurse / Midwife </p>
+                    <p className="text-muted-foreground">Assigned Nurse</p>
                     <p className="font-semibold">{nurse?.name || "Not assigned"}</p>
                   </div>
                 </div>
