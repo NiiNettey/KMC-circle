@@ -1,51 +1,69 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { useApp } from "@/lib/context/app-context"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { AudioButton } from "@/components/ui/audio-button"
-import { toast } from "sonner"
-import { ArrowLeft, Save } from "lucide-react"
-import type { FeedingType, FeedingLog } from "@/lib/types"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useApp } from "@/lib/context/app-context";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { AudioButton } from "@/components/ui/audio-button";
+import { toast } from "sonner";
+import { ArrowLeft, Save } from "lucide-react";
+import type { FeedingType, FeedingLog } from "@/lib/types";
 
-const feedingTypes: { value: FeedingType; label: string; audioKey: string }[] = [
-  { value: "breast", label: "Breastfeeding", audioKey: "feeding-breast" },
-  { value: "expressed", label: "Expressed Milk", audioKey: "feeding-expressed" },
-  { value: "formula", label: "Formula", audioKey: "feeding-formula" },
-  { value: "EBM", label: "EBM (Cup/Tube)", audioKey: "feeding-expressed" },
-  { value: "DBM", label: "Donor Milk", audioKey: "feeding-expressed" },
-]
+const feedingTypes: { value: FeedingType; label: string; audioKey: string }[] =
+  [
+    {
+      value: "direct_breast",
+      label: "Direct Breast Milk",
+      audioKey: "feeding-breast",
+    },
+    {
+      value: "expressed_breast",
+      label: "Expressed Breast Milk",
+      audioKey: "feeding-expressed",
+    },
+    { value: "formula", label: "Formula", audioKey: "feeding-formula" },
+  ];
 
 export default function NewFeedingLogPage() {
-  const router = useRouter()
-  const { user, currentBaby, addLog, playAudio } = useApp()
+  const router = useRouter();
+  const { user, currentBaby, addLog, playAudio } = useApp();
 
   const [dateTime, setDateTime] = useState(
-    new Date()
-      .toISOString()
-      .slice(0, 16), // Format: "2024-01-01T12:00"
-  )
-  const [feedingType, setFeedingType] = useState<FeedingType>("breast")
-  const [amount, setAmount] = useState("")
-  const [notes, setNotes] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+    new Date().toISOString().slice(0, 16) // Format: "2024-01-01T12:00"
+  );
+  const [feedingType, setFeedingType] = useState<FeedingType>("direct_breast");
+  const [amount, setAmount] = useState("");
+  const [notes, setNotes] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
     if (!user || !currentBaby) {
-      toast.error("Please sign in and add a baby first")
-      setIsLoading(false)
-      return
+      toast.error("Please sign in and add a baby first");
+      setIsLoading(false);
+      return;
+    }
+
+    // Require amount for expressed breast milk or formula
+    if (feedingType !== "direct_breast" && !amount) {
+      toast.error("Please enter amount for expressed breast milk or formula");
+      setIsLoading(false);
+      return;
     }
 
     const logData: Omit<FeedingLog, "id" | "timestamp"> = {
@@ -58,17 +76,18 @@ export default function NewFeedingLogPage() {
       data: {
         dateTime: new Date(dateTime).toISOString(),
         type: feedingType,
+        route: "PO",
         amountMl: amount ? Number.parseInt(amount) : null,
         notes,
       },
-    }
+    };
 
-    addLog(logData as Omit<FeedingLog, "id" | "timestamp">)
-    playAudio("save")
-    toast.success("Feeding logged!")
-    router.push("/track")
-    setIsLoading(false)
-  }
+    addLog(logData as Omit<FeedingLog, "id" | "timestamp">);
+    playAudio("save");
+    toast.success("Feeding logged!");
+    router.push("/track");
+    setIsLoading(false);
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -117,8 +136,8 @@ export default function NewFeedingLogPage() {
                         key={type.value}
                         type="button"
                         onClick={() => {
-                          setFeedingType(type.value)
-                          playAudio(type.audioKey)
+                          setFeedingType(type.value);
+                          playAudio(type.audioKey);
                         }}
                         className={`rounded-lg border p-3 text-center text-sm transition-colors ${
                           feedingType === type.value
@@ -144,7 +163,10 @@ export default function NewFeedingLogPage() {
                     min="0"
                     max="200"
                   />
-                  <p className="text-xs text-muted-foreground">Leave blank for direct breastfeeding</p>
+                  <p className="text-xs text-muted-foreground">
+                    Amount is optional for Direct Breast Milk. For Expressed
+                    Breast Milk or Formula, amount (ml) is required.
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -160,7 +182,12 @@ export default function NewFeedingLogPage() {
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <Button type="button" variant="outline" asChild className="flex-1 bg-transparent">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    asChild
+                    className="flex-1 bg-transparent"
+                  >
                     <Link href="/track">Cancel</Link>
                   </Button>
                   <Button type="submit" className="flex-1" disabled={isLoading}>
@@ -174,5 +201,5 @@ export default function NewFeedingLogPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }

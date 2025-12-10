@@ -1,72 +1,87 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { useRouter, useParams } from "next/navigation"
-import Link from "next/link"
-import { useApp } from "@/lib/context/app-context"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { toast } from "sonner"
-import { ArrowLeft, Save } from "lucide-react"
-import type { FeedingLog, FeedingType, FeedingRoute } from "@/lib/types"
-import { getBabyById } from "@/lib/storage"
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
+import { useApp } from "@/lib/context/app-context";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { toast } from "sonner";
+import { ArrowLeft, Save } from "lucide-react";
+import type { FeedingLog, FeedingType, FeedingRoute } from "@/lib/types";
+import { getBabyById } from "@/lib/storage";
 
 const FEEDING_TYPES: { value: FeedingType; label: string }[] = [
-  { value: "breast", label: "Breast" },
-  { value: "expressed", label: "Expressed BM" },
-  { value: "EBM", label: "EBM" },
-  { value: "DBM", label: "DBM" },
+  { value: "direct_breast", label: "Direct Breast Milk" },
+  { value: "expressed_breast", label: "Expressed Breast Milk" },
   { value: "formula", label: "Formula" },
-]
+];
 
 const FEEDING_ROUTES: { value: FeedingRoute; label: string }[] = [
   { value: "PO", label: "PO (Oral)" },
   { value: "OG", label: "OG (Orogastric)" },
-  { value: "NG", label: "NG (Nasogastric)" },
-  { value: "IV", label: "IV (Intravenous)" },
-]
+];
 
 export default function NurseFeedingPage() {
-  const router = useRouter()
-  const params = useParams()
-  const { user, isLoading, addLog } = useApp()
+  const router = useRouter();
+  const params = useParams();
+  const { user, isLoading, addLog } = useApp();
 
-  const babyId = params.id as string
-  const [baby, setBaby] = useState<ReturnType<typeof getBabyById> | null>(null)
+  const babyId = params.id as string;
+  const [baby, setBaby] = useState<ReturnType<typeof getBabyById> | null>(null);
 
-  const [dateTime, setDateTime] = useState(new Date().toISOString().slice(0, 16))
-  const [feedingType, setFeedingType] = useState<FeedingType>("EBM")
-  const [feedingRoute, setFeedingRoute] = useState<FeedingRoute>("OG")
-  const [amount, setAmount] = useState("")
-  const [notes, setNotes] = useState("")
-  const [isSaving, setIsSaving] = useState(false)
+  const [dateTime, setDateTime] = useState(
+    new Date().toISOString().slice(0, 16)
+  );
+  const [feedingType, setFeedingType] =
+    useState<FeedingType>("expressed_breast");
+  const [feedingRoute, setFeedingRoute] = useState<FeedingRoute>("OG");
+  const [amount, setAmount] = useState("");
+  const [notes, setNotes] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && (!user || (user.role !== "nurse" && user.role !== "admin"))) {
-      router.replace("/auth")
-      return
+    if (
+      !isLoading &&
+      (!user || (user.role !== "nurse" && user.role !== "admin"))
+    ) {
+      router.replace("/auth");
+      return;
     }
 
     if (babyId) {
-      const foundBaby = getBabyById(babyId)
-      setBaby(foundBaby)
+      const foundBaby = getBabyById(babyId);
+      setBaby(foundBaby);
     }
-  }, [user, isLoading, router, babyId])
+  }, [user, isLoading, router, babyId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSaving(true)
+    e.preventDefault();
+    setIsSaving(true);
 
     if (!user || !baby) {
-      toast.error("Unable to save feeding")
-      setIsSaving(false)
-      return
+      toast.error("Unable to save feeding");
+      setIsSaving(false);
+      return;
+    }
+
+    // Validation: require amount for expressed breast or formula
+    if (feedingType !== "direct_breast" && !amount) {
+      toast.error("Please enter amount for expressed breast milk or formula");
+      setIsSaving(false);
+      return;
     }
 
     const logData: Omit<FeedingLog, "id" | "timestamp"> = {
@@ -83,20 +98,20 @@ export default function NurseFeedingPage() {
         amountMl: amount ? Number.parseFloat(amount) : null,
         notes,
       },
-    }
+    };
 
-    addLog(logData as Omit<FeedingLog, "id" | "timestamp">)
-    toast.success("Feeding recorded!")
-    router.push(`/nurse/patient/${babyId}`)
-    setIsSaving(false)
-  }
+    addLog(logData as Omit<FeedingLog, "id" | "timestamp">);
+    toast.success("Feeding recorded!");
+    router.push(`/nurse/patient/${babyId}`);
+    setIsSaving(false);
+  };
 
   if (isLoading || !user || !baby) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
-    )
+    );
   }
 
   return (
@@ -120,7 +135,9 @@ export default function NurseFeedingPage() {
           <Card>
             <CardHeader>
               <CardTitle>Feeding Log</CardTitle>
-              <CardDescription>Record feeding type, route, and amount</CardDescription>
+              <CardDescription>
+                Record feeding type, route, and amount
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -144,7 +161,11 @@ export default function NurseFeedingPage() {
                   >
                     {FEEDING_TYPES.map((type) => (
                       <div key={type.value}>
-                        <RadioGroupItem value={type.value} id={type.value} className="peer sr-only" />
+                        <RadioGroupItem
+                          value={type.value}
+                          id={type.value}
+                          className="peer sr-only"
+                        />
                         <Label
                           htmlFor={type.value}
                           className="flex items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer text-sm"
@@ -165,7 +186,11 @@ export default function NurseFeedingPage() {
                   >
                     {FEEDING_ROUTES.map((route) => (
                       <div key={route.value}>
-                        <RadioGroupItem value={route.value} id={`route-${route.value}`} className="peer sr-only" />
+                        <RadioGroupItem
+                          value={route.value}
+                          id={`route-${route.value}`}
+                          className="peer sr-only"
+                        />
                         <Label
                           htmlFor={`route-${route.value}`}
                           className="flex items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer text-sm"
@@ -204,7 +229,12 @@ export default function NurseFeedingPage() {
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <Button type="button" variant="outline" asChild className="flex-1 bg-transparent">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    asChild
+                    className="flex-1 bg-transparent"
+                  >
                     <Link href={`/nurse/patient/${babyId}`}>Cancel</Link>
                   </Button>
                   <Button type="submit" className="flex-1" disabled={isSaving}>
@@ -218,5 +248,5 @@ export default function NurseFeedingPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }

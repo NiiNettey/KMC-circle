@@ -1,4 +1,4 @@
-import type { User, EduItem, Baby, LogEntry } from "./types"
+import type { User, EduItem, Baby, LogEntry } from "./types";
 
 export const SEED_NURSES: User[] = [
   {
@@ -41,7 +41,7 @@ export const SEED_NURSES: User[] = [
     locale: "en",
     createdAt: new Date().toISOString(),
   },
-]
+];
 
 export const SEED_ADMIN: User = {
   id: "admin-acc-001",
@@ -52,7 +52,7 @@ export const SEED_ADMIN: User = {
   facility: "Korle Bu General",
   locale: "en",
   createdAt: new Date().toISOString(),
-}
+};
 
 export const DEMO_PARENT: User = {
   id: "user-demo-mom-001",
@@ -62,7 +62,7 @@ export const DEMO_PARENT: User = {
   role: "parent",
   locale: "en",
   createdAt: new Date().toISOString(),
-}
+};
 
 export const DEMO_BABY: Baby = {
   id: "baby-demo-001",
@@ -90,7 +90,7 @@ export const DEMO_BABY: Baby = {
   admissionDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
   admissionWeightGrams: 1800,
   referralSource: "Labor Ward",
-}
+};
 
 export const DEMO_REFERRED_BABY: Baby = {
   id: "baby-demo-002",
@@ -118,7 +118,7 @@ export const DEMO_REFERRED_BABY: Baby = {
   admissionDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
   admissionWeightGrams: 1400,
   referralSource: "Neonatal Unit",
-}
+};
 
 export const DEMO_LOGS: LogEntry[] = [
   {
@@ -149,7 +149,7 @@ export const DEMO_LOGS: LogEntry[] = [
     immutable: true,
     data: {
       dateTime: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-      type: "breast" as const,
+      type: "direct_breast" as const,
       route: "PO" as const,
       amountMl: null,
       notes: "",
@@ -240,7 +240,7 @@ export const DEMO_LOGS: LogEntry[] = [
       notes: "Making good progress",
     },
   },
-]
+];
 
 export const SEED_EDU_CONTENT: EduItem[] = [
   // KMC Basics
@@ -366,4 +366,4 @@ export const SEED_EDU_CONTENT: EduItem[] = [
       "Your partner needs your support now more than ever. Help with expressing and storing breastmilk. Take turns with night feeds when possible. Listen without trying to fix everything. Celebrate small victories together.",
     audioFiles: { en: null, tw: null, ga: null, ew: null },
   },
-]
+];

@@ -1,81 +1,122 @@
-"use client"
+"use client";
 
-import { useEffect, useMemo } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { useApp } from "@/lib/context/app-context"
-import { AppHeader } from "@/components/layout/app-header"
-import { BottomNav } from "@/components/layout/bottom-nav"
-import { ProgressRing } from "@/components/ui/progress-ring"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { AudioButton } from "@/components/ui/audio-button"
-import { Play, Utensils, Scale, FileText, Clock, TrendingUp, BookOpen, AlertCircle, Sparkles } from "lucide-react"
+import { useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useApp } from "@/lib/context/app-context";
+import { AppHeader } from "@/components/layout/app-header";
+import { BottomNav } from "@/components/layout/bottom-nav";
+import { ProgressRing } from "@/components/ui/progress-ring";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { AudioButton } from "@/components/ui/audio-button";
+import {
+  Play,
+  Utensils,
+  Scale,
+  FileText,
+  Clock,
+  TrendingUp,
+  BookOpen,
+  AlertCircle,
+  Sparkles,
+} from "lucide-react";
 import {
   getTodayKMCMinutes,
   getWeeklyKMCData,
   getTodayFeedingCount,
   getTotalKMCHours,
   calculateWeightGainVelocity,
-} from "@/lib/utils/analytics"
-import { getEduContent } from "@/lib/storage"
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts"
-import { MamaBabyIllustration } from "@/components/illustrations/mama-baby"
-import { motion } from "framer-motion"
+} from "@/lib/utils/analytics";
+import { getEduContent } from "@/lib/storage";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
+import { MamaBabyIllustration } from "@/components/illustrations/mama-baby";
+import { motion } from "framer-motion";
 
-const KMC_DAILY_GOAL_MINUTES = 240
+const KMC_DAILY_GOAL_MINUTES = 480;
 
 export default function DashboardPage() {
-  const router = useRouter()
-  const { user, isLoading, currentBaby, babies, logs, timer, notifications } = useApp()
+  const router = useRouter();
+  const { user, isLoading, currentBaby, babies, logs, timer, notifications } =
+    useApp();
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.replace("/auth")
-      return
+      router.replace("/auth");
+      return;
     }
     if (!isLoading && user?.role === "nurse") {
-      router.replace("/nurse")
-      return
+      router.replace("/nurse");
+      return;
     }
     if (!isLoading && babies.length === 0) {
-      router.replace("/setup-baby")
+      router.replace("/setup-baby");
     }
-  }, [user, isLoading, babies, router])
+  }, [user, isLoading, babies, router]);
 
-  const todayMinutes = useMemo(() => (currentBaby ? getTodayKMCMinutes(logs, currentBaby.id) : 0), [logs, currentBaby])
-  const weeklyData = useMemo(() => (currentBaby ? getWeeklyKMCData(logs, currentBaby.id) : []), [logs, currentBaby])
+  const todayMinutes = useMemo(
+    () => (currentBaby ? getTodayKMCMinutes(logs, currentBaby.id) : 0),
+    [logs, currentBaby]
+  );
+  const weeklyData = useMemo(
+    () => (currentBaby ? getWeeklyKMCData(logs, currentBaby.id) : []),
+    [logs, currentBaby]
+  );
   const todayFeedings = useMemo(
     () => (currentBaby ? getTodayFeedingCount(logs, currentBaby.id) : 0),
-    [logs, currentBaby],
-  )
-  const totalKMCHours = useMemo(() => (currentBaby ? getTotalKMCHours(logs, currentBaby.id) : 0), [logs, currentBaby])
+    [logs, currentBaby]
+  );
+  const totalKMCHours = useMemo(
+    () => (currentBaby ? getTotalKMCHours(logs, currentBaby.id) : 0),
+    [logs, currentBaby]
+  );
   const weightVelocity = useMemo(
-    () => (currentBaby ? calculateWeightGainVelocity(logs, currentBaby.id) : null),
-    [logs, currentBaby],
-  )
+    () =>
+      currentBaby ? calculateWeightGainVelocity(logs, currentBaby.id) : null,
+    [logs, currentBaby]
+  );
 
   const latestTip = useMemo(() => {
-    const edu = getEduContent()
-    return edu[Math.floor(Math.random() * edu.length)]
-  }, [])
+    const edu = getEduContent();
+    return edu[Math.floor(Math.random() * edu.length)];
+  }, []);
 
-  const unreadNotifications = notifications.filter((n) => !n.read)
-  const progressPercent = Math.min((todayMinutes / KMC_DAILY_GOAL_MINUTES) * 100, 100)
-  const hoursToday = Math.floor(todayMinutes / 60)
-  const minutesToday = todayMinutes % 60
+  const unreadNotifications = notifications.filter((n) => !n.read);
+  const progressPercent = Math.min(
+    (todayMinutes / KMC_DAILY_GOAL_MINUTES) * 100,
+    100
+  );
+  const hoursToday = Math.floor(todayMinutes / 60);
+  const minutesToday = todayMinutes % 60;
 
   if (isLoading || !user || !currentBaby) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-primary/5 to-background">
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          transition={{
+            duration: 1,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
           className="h-10 w-10 rounded-full border-4 border-primary border-t-transparent"
         />
       </div>
-    )
+    );
   }
 
   return (
@@ -89,28 +130,42 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-4 rounded-2xl bg-gradient-to-r from-primary/10 to-secondary/30 p-4"
           >
-            <MamaBabyIllustration className="h-20 w-20 shrink-0" variant="kmc" />
+            <MamaBabyIllustration
+              className="h-20 w-20 shrink-0"
+              variant="kmc"
+            />
             <div>
               <p className="text-sm text-muted-foreground">Welcome back,</p>
               <h2 className="text-lg font-bold text-foreground">{user.name}</h2>
               <p className="text-sm text-muted-foreground">
                 {currentBaby.babyName} is{" "}
-                {Math.floor((Date.now() - new Date(currentBaby.dob).getTime()) / (1000 * 60 * 60 * 24))} days old
+                {Math.floor(
+                  (Date.now() - new Date(currentBaby.dob).getTime()) /
+                    (1000 * 60 * 60 * 24)
+                )}{" "}
+                days old
               </p>
             </div>
           </motion.div>
 
           {/* Pending Approval Notice */}
           {currentBaby.status === "pending_nurse_approval" && (
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
               <Card className="border-amber-500/50 bg-amber-500/5">
                 <CardContent className="flex items-center gap-3 p-4">
                   <div className="h-10 w-10 rounded-full bg-amber-500/20 flex items-center justify-center">
                     <AlertCircle className="h-5 w-5 text-amber-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">Awaiting Nurse Approval</p>
-                    <p className="text-xs text-muted-foreground">Your nurse will review your request soon</p>
+                    <p className="text-sm font-medium">
+                      Awaiting Nurse Approval
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Your nurse will review your request soon
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -119,14 +174,18 @@ export default function DashboardPage() {
 
           {/* Unread Notifications */}
           {unreadNotifications.length > 0 && (
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
               <Card className="border-primary/30 bg-primary/5">
                 <CardContent className="flex items-center gap-3 p-4">
                   <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
                     <Sparkles className="h-5 w-5 text-primary" />
                   </div>
                   <p className="text-sm font-medium text-primary">
-                    You have {unreadNotifications.length} new notification{unreadNotifications.length > 1 ? "s" : ""}
+                    You have {unreadNotifications.length} new notification
+                    {unreadNotifications.length > 1 ? "s" : ""}
                   </p>
                 </CardContent>
               </Card>
@@ -134,7 +193,11 @@ export default function DashboardPage() {
           )}
 
           {/* Today's KMC Progress - Enhanced with animation */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
             <Card className="overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
               <CardContent className="flex items-center gap-6 p-6 relative">
@@ -153,7 +216,9 @@ export default function DashboardPage() {
                 </ProgressRing>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold">Today&apos;s KMC</h3>
-                  <p className="text-sm text-muted-foreground mb-3">Goal: 4 hours of skin-to-skin</p>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Goal: 8 hours of skin-to-skin
+                  </p>
                   {timer.isRunning && timer.babyId === currentBaby.id ? (
                     <Button asChild className="w-full">
                       <Link href="/timer">
@@ -178,7 +243,11 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* Weekly Progress Chart */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -190,15 +259,41 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="h-36">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={weeklyData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                    <AreaChart
+                      data={weeklyData}
+                      margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+                    >
                       <defs>
-                        <linearGradient id="kmcGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(270, 70%, 45%)" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="hsl(270, 70%, 45%)" stopOpacity={0} />
+                        <linearGradient
+                          id="kmcGradient"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="hsl(270, 70%, 45%)"
+                            stopOpacity={0.4}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="hsl(270, 70%, 45%)"
+                            stopOpacity={0}
+                          />
                         </linearGradient>
                       </defs>
-                      <XAxis dataKey="day" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <XAxis
+                        dataKey="day"
+                        tick={{ fontSize: 11 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 11 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
                       <Tooltip
                         contentStyle={{
                           backgroundColor: "hsl(var(--card))",
@@ -231,44 +326,76 @@ export default function DashboardPage() {
           >
             <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
               <CardContent className="p-4 text-center">
-                <p className="text-3xl font-bold text-primary">{totalKMCHours.toFixed(1)}</p>
-                <p className="text-xs text-muted-foreground mt-1">Total Hours</p>
+                <p className="text-3xl font-bold text-primary">
+                  {totalKMCHours.toFixed(1)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Total Hours
+                </p>
               </CardContent>
             </Card>
             <Card className="bg-gradient-to-br from-secondary/50 to-secondary/20">
               <CardContent className="p-4 text-center">
-                <p className="text-3xl font-bold">{currentBaby.currentWeightGrams}</p>
+                <p className="text-3xl font-bold">
+                  {currentBaby.currentWeightGrams}
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">Weight (g)</p>
               </CardContent>
             </Card>
             <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
               <CardContent className="p-4 text-center">
-                <p className="text-3xl font-bold text-green-600">{todayFeedings}</p>
-                <p className="text-xs text-muted-foreground mt-1">Feeds Today</p>
+                <p className="text-3xl font-bold text-green-600">
+                  {todayFeedings}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Feeds Today
+                </p>
               </CardContent>
             </Card>
           </motion.div>
 
           {/* Weight Gain Indicator */}
           {weightVelocity !== null && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-              <Card className={weightVelocity >= 15 ? "bg-green-500/5 border-green-500/20" : ""}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Card
+                className={
+                  weightVelocity >= 15
+                    ? "bg-green-500/5 border-green-500/20"
+                    : ""
+                }
+              >
                 <CardContent className="flex items-center justify-between p-4">
                   <div className="flex items-center gap-3">
                     <div
-                      className={`h-10 w-10 rounded-full flex items-center justify-center ${weightVelocity >= 15 ? "bg-green-500/20" : "bg-muted"}`}
+                      className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                        weightVelocity >= 15 ? "bg-green-500/20" : "bg-muted"
+                      }`}
                     >
                       <Scale
-                        className={`h-5 w-5 ${weightVelocity >= 15 ? "text-green-600" : "text-muted-foreground"}`}
+                        className={`h-5 w-5 ${
+                          weightVelocity >= 15
+                            ? "text-green-600"
+                            : "text-muted-foreground"
+                        }`}
                       />
                     </div>
                     <div>
                       <p className="font-medium">Weight Gain</p>
-                      <p className="text-xs text-muted-foreground">Average daily</p>
+                      <p className="text-xs text-muted-foreground">
+                        Average daily
+                      </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`text-2xl font-bold ${weightVelocity >= 15 ? "text-green-600" : ""}`}>
+                    <p
+                      className={`text-2xl font-bold ${
+                        weightVelocity >= 15 ? "text-green-600" : ""
+                      }`}
+                    >
                       {weightVelocity.toFixed(1)}g
                     </p>
                     <p className="text-xs text-muted-foreground">per day</p>
@@ -279,7 +406,11 @@ export default function DashboardPage() {
           )}
 
           {/* Quick Log Buttons - Enhanced with colors */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">Quick Log</CardTitle>
@@ -331,7 +462,11 @@ export default function DashboardPage() {
 
           {/* Latest Tip */}
           {latestTip && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
               <Card className="bg-gradient-to-br from-primary/5 to-secondary/10 border-primary/20">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
@@ -346,8 +481,14 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm font-medium mb-2">{latestTip.title}</p>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{latestTip.content}</p>
-                  <Button variant="link" asChild className="mt-2 h-auto p-0 text-primary">
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {latestTip.content}
+                  </p>
+                  <Button
+                    variant="link"
+                    asChild
+                    className="mt-2 h-auto p-0 text-primary"
+                  >
                     <Link href="/learn">Read more in Learn →</Link>
                   </Button>
                 </CardContent>
@@ -359,5 +500,5 @@ export default function DashboardPage() {
 
       <BottomNav />
     </div>
-  )
+  );
 }
