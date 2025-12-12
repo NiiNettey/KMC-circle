@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AudioButton } from "@/components/ui/audio-button";
 import { toast } from "sonner";
 import type { Language, BabyStatus } from "@/lib/types";
@@ -57,6 +58,7 @@ export default function SetupBabyPage() {
   // Form state
   const [babyName, setBabyName] = useState("");
   const [dob, setDob] = useState("");
+  const [gender, setGender] = useState<"male" | "female">("male");
   const [gestationalAge, setGestationalAge] = useState("");
   const [birthWeight, setBirthWeight] = useState("");
   const [currentWeight, setCurrentWeight] = useState("");
@@ -105,6 +107,7 @@ export default function SetupBabyPage() {
       assignedNurseId: hasNurse ? selectedNurseId : null,
       status,
       babyName,
+      gender,
       dob,
       gestationalAgeWeeks: Number.parseInt(gestationalAge),
       birthWeightGrams: Number.parseInt(birthWeight),
@@ -241,6 +244,39 @@ export default function SetupBabyPage() {
                           className="h-12"
                           max={new Date().toISOString().split("T")[0]}
                         />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Gender</Label>
+                        <RadioGroup
+                          value={gender}
+                          onValueChange={(v) =>
+                            setGender(v as "male" | "female")
+                          }
+                        >
+                          <div className="flex gap-4">
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="male" id="gender-male" />
+                              <Label
+                                htmlFor="gender-male"
+                                className="cursor-pointer"
+                              >
+                                Male
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem
+                                value="female"
+                                id="gender-female"
+                              />
+                              <Label
+                                htmlFor="gender-female"
+                                className="cursor-pointer"
+                              >
+                                Female
+                              </Label>
+                            </div>
+                          </div>
+                        </RadioGroup>
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
