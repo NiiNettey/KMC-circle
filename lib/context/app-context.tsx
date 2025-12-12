@@ -82,6 +82,14 @@ interface AppContextType {
   ) => void;
   markNotificationRead: (id: string) => void;
 
+  // Danger signs
+  getDangerSignsByBaby: (babyId: string) => import("@/lib/types").DangerEntry[];
+  reportDanger: (
+    babyId: string,
+    sign: string,
+    value?: number | string | null
+  ) => import("@/lib/types").DangerEntry | null;
+
   // Nurses (for dropdown)
   nurses: User[];
   getNurseWorkload: (nurseId: string) => number;
@@ -461,6 +469,97 @@ export function AppProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const getDangerSignsByBabyFn = useCallback((babyId: string) => {
+    return storage.getDangerSignsByBaby(babyId);
+  }, []);
+
+  const getActiveDangerSignsByBabyFn = useCallback((babyId: string) => {
+    return storage.getActiveDangerSignsByBaby(babyId);
+  }, []);
+
+  const resolveDangerFn = useCallback(
+    (entryId: string) => {
+      if (!user) return false;
+      const success = storage.resolveDanger(entryId, user.id, null);
+      if (!success) return false;
+
+      // Notify parent and admin
+      // find entry to get baby
+      const all = storage.getDangerSigns();
+      const entry = all.find((e) => e.id === entryId);
+      if (!entry) return false;
+      const baby = storage.getBabyById(entry.babyId);
+
+      if (baby?.motherUserId) {
+        addNotificationFn({
+          userId: baby.motherUserId,
+          type: "reminder",
+          title: "Danger Resolved",
+          message: `${baby.babyName}: ${entry.sign} has been marked resolved by ${user.name}`,
+          read: false,
+          data: { babyId: baby.id, entryId },
+        });
+      }
+
+      addNotificationFn({
+        userId: "admin-acc-001",
+        type: "reminder",
+        title: "Danger Resolved",
+        message: `${baby?.babyName || "Baby"}: ${
+          entry.sign
+        } marked resolved by ${user.name}`,
+        read: false,
+        data: { babyId: baby?.id, entryId },
+      });
+
+      refreshBabies();
+      return true;
+    },
+    [addNotificationFn, refreshBabies, user]
+  );
+
+  const reportDangerFn = useCallback(
+    (babyId: string, sign: string, value?: number | string | null) => {
+      const entry = {
+        id: uuid(),
+        babyId,
+        reportedByUserId: user?.id || null,
+        reportedByRole: user?.role || ("parent" as UserRole),
+        sign,
+        value: value ?? null,
+        timestamp: new Date().toISOString(),
+      } as import("@/lib/types").DangerEntry;
+
+      storage.addDangerSign(entry);
+
+      const baby = storage.getBabyById(babyId);
+      if (baby?.assignedNurseId) {
+        addNotificationFn({
+          userId: baby.assignedNurseId,
+          type: "reminder",
+          title: "Danger Sign Reported",
+          message: `${baby.babyName}: ${sign} (${value ?? ""})`,
+          read: false,
+          data: { babyId, sign, value },
+        });
+      }
+
+      addNotificationFn({
+        userId: "admin-acc-001",
+        type: "reminder",
+        title: "Danger Sign Reported",
+        message: `${baby?.babyName || "Baby"}: ${sign} (${value ?? ""})`,
+        read: false,
+        data: { babyId, sign, value },
+      });
+
+      refreshBabies();
+
+      return entry;
+    },
+    [addNotificationFn, refreshBabies, user]
+  );
+
   const playAudio = useCallback(
     (key: string) => {
       const locale = user?.locale || "en";
@@ -505,6 +604,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         nurses,
         getNurseWorkload,
         getNurseMaxCapacity: storage.getNurseMaxCapacity,
+        getDangerSignsByBaby: getDangerSignsByBabyFn,
+        getActiveDangerSignsByBaby: getActiveDangerSignsByBabyFn,
+        reportDanger: reportDangerFn,
+        resolveDanger: resolveDangerFn,
         playAudio,
         refreshBabies,
       }}

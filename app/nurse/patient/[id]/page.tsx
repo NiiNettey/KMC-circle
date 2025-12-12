@@ -22,6 +22,7 @@ import {
   ClipboardList,
   Baby,
   Utensils,
+  Activity,
 } from "lucide-react";
 import { getBabyById, getUserById, getLogsByBaby } from "@/lib/storage";
 import type { Baby as BabyType, LogEntry, KMCSessionLog } from "@/lib/types";
@@ -45,7 +46,7 @@ const KMC_DAILY_GOAL_MINUTES = 480;
 export default function NursePatientPage() {
   const router = useRouter();
   const params = useParams();
-  const { user, isLoading } = useApp();
+  const { user, isLoading, getDangerSignsByBaby } = useApp();
   const [baby, setBaby] = useState<BabyType | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
@@ -168,6 +169,32 @@ export default function NursePatientPage() {
                 <p className="text-xs text-muted-foreground">Gest. Age</p>
                 <p className="font-semibold">{baby.gestationalAgeWeeks}w</p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Danger Signs */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Danger Signs</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {getDangerSignsByBaby(baby.id).length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No danger signs reported
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {getDangerSignsByBaby(baby.id).map((d) => (
+                    <div key={d.id} className="rounded-lg border p-3 bg-red-50">
+                      <p className="font-medium">{d.sign}</p>
+                      {d.value && <p className="text-sm">Value: {d.value}</p>}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Reported: {new Date(d.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -351,7 +378,17 @@ export default function NursePatientPage() {
               <Button
                 variant="outline"
                 asChild
-                className="h-auto flex-col gap-1 py-3 bg-transparent col-span-3"
+                className="h-auto flex-col gap-1 py-3 bg-transparent"
+              >
+                <Link href={`/nurse/patient/${baby.id}/charts`}>
+                  <Activity className="h-5 w-5 text-primary" />
+                  <span className="text-xs">Charts</span>
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                asChild
+                className="h-auto flex-col gap-1 py-3 bg-transparent col-span-2"
               >
                 <Link href={`/nurse/patient/${baby.id}/comment`}>
                   <MessageSquare className="h-5 w-5 text-primary" />

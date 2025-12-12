@@ -10,6 +10,7 @@ import type {
   Comment,
   ForumType,
   ReactionType,
+  DangerEntry,
 } from "./types";
 
 // Storage keys
@@ -410,4 +411,48 @@ export function toggleCommentReaction(
     }
     setComments(comments);
   }
+}
+
+// Danger signs storage
+const DANGER_KEY = "kmc_danger_signs_v0";
+
+export function getDangerSigns(): DangerEntry[] {
+  return getItem<DangerEntry[]>(DANGER_KEY, []);
+}
+
+export function setDangerSigns(entries: DangerEntry[]): void {
+  setItem(DANGER_KEY, entries);
+}
+
+export function addDangerSign(entry: DangerEntry): void {
+  const entries = getDangerSigns();
+  entries.push(entry);
+  setDangerSigns(entries);
+}
+
+export function getDangerSignsByBaby(babyId: string): DangerEntry[] {
+  return getDangerSigns().filter((e) => e.babyId === babyId);
+}
+
+export function getActiveDangerSignsByBaby(babyId: string): DangerEntry[] {
+  return getDangerSigns().filter((e) => e.babyId === babyId && !e.resolved);
+}
+
+export function resolveDanger(
+  entryId: string,
+  resolverId?: string | null,
+  note?: string | null
+): boolean {
+  const entries = getDangerSigns();
+  const index = entries.findIndex((e) => e.id === entryId);
+  if (index === -1) return false;
+  entries[index] = {
+    ...entries[index],
+    resolved: true,
+    resolvedById: resolverId ?? null,
+    resolvedAt: new Date().toISOString(),
+    resolutionNote: note ?? null,
+  };
+  setDangerSigns(entries);
+  return true;
 }

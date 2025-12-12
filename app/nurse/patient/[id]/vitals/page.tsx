@@ -1,73 +1,84 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { useRouter, useParams } from "next/navigation"
-import Link from "next/link"
-import { useApp } from "@/lib/context/app-context"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { toast } from "sonner"
-import { ArrowLeft, Save } from "lucide-react"
-import type { VitalsLog } from "@/lib/types"
-import { getBabyById } from "@/lib/storage"
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
+import { useApp } from "@/lib/context/app-context";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
+import { ArrowLeft, Save } from "lucide-react";
+import type { VitalsLog } from "@/lib/types";
+import { getBabyById } from "@/lib/storage";
 
 export default function NurseVitalsPage() {
-  const router = useRouter()
-  const params = useParams()
-  const { user, isLoading, addLog } = useApp()
+  const router = useRouter();
+  const params = useParams();
+  const { user, isLoading, addLog, reportDanger } = useApp();
 
-  const babyId = params.id as string
-  const [baby, setBaby] = useState<ReturnType<typeof getBabyById> | null>(null)
+  const babyId = params.id as string;
+  const [baby, setBaby] = useState<ReturnType<typeof getBabyById> | null>(null);
 
-  const [dateTime, setDateTime] = useState(new Date().toISOString().slice(0, 16))
-  const [temperature, setTemperature] = useState("")
-  const [heartRate, setHeartRate] = useState("")
-  const [respiratoryRate, setRespiratoryRate] = useState("")
-  const [oxygenSat, setOxygenSat] = useState("")
-  const [breathingSupport, setBreathingSupport] = useState("")
-  const [bpSystolic, setBpSystolic] = useState("")
-  const [bpDiastolic, setBpDiastolic] = useState("")
-  const [glucose, setGlucose] = useState("")
-  const [bilirubin, setBilirubin] = useState("")
-  const [phototherapy, setPhototherapy] = useState(false)
-  const [painScore, setPainScore] = useState("")
-  const [notes, setNotes] = useState("")
-  const [isSaving, setIsSaving] = useState(false)
+  const [dateTime, setDateTime] = useState(
+    new Date().toISOString().slice(0, 16)
+  );
+  const [temperature, setTemperature] = useState("");
+  const [heartRate, setHeartRate] = useState("");
+  const [respiratoryRate, setRespiratoryRate] = useState("");
+  const [oxygenSat, setOxygenSat] = useState("");
+  const [breathingSupport, setBreathingSupport] = useState("");
+  const [bpSystolic, setBpSystolic] = useState("");
+  const [bpDiastolic, setBpDiastolic] = useState("");
+  const [glucose, setGlucose] = useState("");
+  const [bilirubin, setBilirubin] = useState("");
+  const [phototherapy, setPhototherapy] = useState(false);
+  const [painScore, setPainScore] = useState("");
+  const [notes, setNotes] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && (!user || (user.role !== "nurse" && user.role !== "admin"))) {
-      router.replace("/auth")
-      return
+    if (
+      !isLoading &&
+      (!user || (user.role !== "nurse" && user.role !== "admin"))
+    ) {
+      router.replace("/auth");
+      return;
     }
 
     if (babyId) {
-      const foundBaby = getBabyById(babyId)
-      setBaby(foundBaby)
+      const foundBaby = getBabyById(babyId);
+      setBaby(foundBaby);
     }
-  }, [user, isLoading, router, babyId])
+  }, [user, isLoading, router, babyId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSaving(true)
+    e.preventDefault();
+    setIsSaving(true);
 
     if (!user || !baby) {
-      toast.error("Unable to save vitals")
-      setIsSaving(false)
-      return
+      toast.error("Unable to save vitals");
+      setIsSaving(false);
+      return;
     }
 
     // Calculate MAP if BP provided
-    let map: number | null = null
+    let map: number | null = null;
     if (bpSystolic && bpDiastolic) {
-      const sys = Number.parseFloat(bpSystolic)
-      const dia = Number.parseFloat(bpDiastolic)
-      map = Math.round((sys + 2 * dia) / 3)
+      const sys = Number.parseFloat(bpSystolic);
+      const dia = Number.parseFloat(bpDiastolic);
+      map = Math.round((sys + 2 * dia) / 3);
     }
 
     const logData: Omit<VitalsLog, "id" | "timestamp"> = {
@@ -81,11 +92,15 @@ export default function NurseVitalsPage() {
         dateTime: new Date(dateTime).toISOString(),
         temperature: temperature ? Number.parseFloat(temperature) : null,
         heartRate: heartRate ? Number.parseInt(heartRate) : null,
-        respiratoryRate: respiratoryRate ? Number.parseInt(respiratoryRate) : null,
+        respiratoryRate: respiratoryRate
+          ? Number.parseInt(respiratoryRate)
+          : null,
         oxygenSaturation: oxygenSat ? Number.parseInt(oxygenSat) : null,
         breathingSupport: breathingSupport || null,
         bloodPressureSystolic: bpSystolic ? Number.parseInt(bpSystolic) : null,
-        bloodPressureDiastolic: bpDiastolic ? Number.parseInt(bpDiastolic) : null,
+        bloodPressureDiastolic: bpDiastolic
+          ? Number.parseInt(bpDiastolic)
+          : null,
         bloodPressureMAP: map,
         glucose: glucose ? Number.parseFloat(glucose) : null,
         bilirubin: bilirubin ? Number.parseFloat(bilirubin) : null,
@@ -93,20 +108,30 @@ export default function NurseVitalsPage() {
         painScore: painScore ? Number.parseInt(painScore) : null,
         notes,
       },
+    };
+
+    addLog(logData as Omit<VitalsLog, "id" | "timestamp">);
+    // Automatic temperature trigger
+    const tempVal = temperature ? Number.parseFloat(temperature) : null;
+    if (tempVal !== null && (tempVal < 36.5 || tempVal > 37.5)) {
+      reportDanger(baby.id, "Abnormal temperature", tempVal);
+      toast.error(
+        "Danger sign detected: abnormal temperature — notified staff"
+      );
+    } else {
+      toast.success("Vitals recorded!");
     }
 
-    addLog(logData as Omit<VitalsLog, "id" | "timestamp">)
-    toast.success("Vitals recorded!")
-    router.push(`/nurse/patient/${babyId}`)
-    setIsSaving(false)
-  }
+    router.push(`/nurse/patient/${babyId}`);
+    setIsSaving(false);
+  };
 
   if (isLoading || !user || !baby) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
-    )
+    );
   }
 
   return (
@@ -130,7 +155,9 @@ export default function NurseVitalsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Vital Signs</CardTitle>
-              <CardDescription>NICU/Baby Unit Chart - Record clinical observations</CardDescription>
+              <CardDescription>
+                NICU/Baby Unit Chart - Record clinical observations
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -273,8 +300,13 @@ export default function NurseVitalsPage() {
                   <div className="space-y-2">
                     <Label>Phototherapy Given?</Label>
                     <div className="flex items-center h-12 space-x-2">
-                      <Switch checked={phototherapy} onCheckedChange={setPhototherapy} />
-                      <span className="text-sm">{phototherapy ? "Yes" : "No"}</span>
+                      <Switch
+                        checked={phototherapy}
+                        onCheckedChange={setPhototherapy}
+                      />
+                      <span className="text-sm">
+                        {phototherapy ? "Yes" : "No"}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -303,7 +335,12 @@ export default function NurseVitalsPage() {
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <Button type="button" variant="outline" asChild className="flex-1 bg-transparent">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    asChild
+                    className="flex-1 bg-transparent"
+                  >
                     <Link href={`/nurse/patient/${babyId}`}>Cancel</Link>
                   </Button>
                   <Button type="submit" className="flex-1" disabled={isSaving}>
@@ -317,5 +354,5 @@ export default function NurseVitalsPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }

@@ -117,7 +117,7 @@ export const DEMO_REFERRED_BABY: Baby = {
   photoUrl: null,
   colorTag: "white",
   claimCode: "KMC-A3X7", // For parent to claim later
-  motherName: "Akua Mensah",
+  motherName: "Demo Mama",
   motherPhone: "0209876543",
   admissionDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
   admissionWeightGrams: 1400,

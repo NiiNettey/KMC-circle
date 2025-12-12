@@ -294,6 +294,21 @@ export const DISCHARGE_CRITERIA = {
 export type ForumType = "moms" | "dads";
 export type ReactionType = "heart" | "hug" | "pray" | "celebrate";
 
+// Danger sign reporting
+export interface DangerEntry {
+  id: string;
+  babyId: string;
+  reportedByUserId: string | null;
+  reportedByRole: UserRole;
+  sign: string;
+  value?: number | string | null;
+  timestamp: string;
+  resolved?: boolean;
+  resolvedById?: string | null;
+  resolvedAt?: string | null;
+  resolutionNote?: string | null;
+}
+
 export interface Post {
   id: string;
   forumType: ForumType;

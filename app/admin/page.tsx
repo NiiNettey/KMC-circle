@@ -31,6 +31,7 @@ export default function AdminDashboardPage() {
   const {
     user,
     isLoading,
+    getDangerSignsByBaby,
     logout,
     getAllBabies,
     nurses,
