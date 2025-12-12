@@ -11,6 +11,8 @@ export interface User {
   facility?: string;
   locale: Language;
   createdAt: string;
+  // Optional: maximum number of babies this nurse/midwife can be assigned
+  maxPatients?: number;
 }
 
 // Baby types

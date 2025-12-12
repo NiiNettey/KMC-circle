@@ -10,6 +10,7 @@ export const SEED_NURSES: User[] = [
     facility: "Korle Bu General",
     locale: "en",
     createdAt: new Date().toISOString(),
+    maxPatients: 10,
   },
   {
     id: "nurse-acc-002",
@@ -20,6 +21,7 @@ export const SEED_NURSES: User[] = [
     facility: "Greater Accra Clinic",
     locale: "en",
     createdAt: new Date().toISOString(),
+    maxPatients: 5,
   },
   {
     id: "nurse-acc-003",
@@ -30,6 +32,7 @@ export const SEED_NURSES: User[] = [
     facility: "Tamale Regional",
     locale: "en",
     createdAt: new Date().toISOString(),
+    maxPatients: 8,
   },
   {
     id: "nurse-acc-004",
@@ -40,6 +43,7 @@ export const SEED_NURSES: User[] = [
     facility: "Kumasi Maternity",
     locale: "en",
     createdAt: new Date().toISOString(),
+    maxPatients: 10,
   },
 ];
 

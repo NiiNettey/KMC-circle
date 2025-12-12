@@ -1,75 +1,106 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import Link from "next/link"
-import { useApp } from "@/lib/context/app-context"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { toast } from "sonner"
-import { ArrowLeft, Baby, UserCheck, AlertCircle, CheckCircle } from "lucide-react"
-import type { Baby as BabyType } from "@/lib/types"
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useApp } from "@/lib/context/app-context";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import {
+  ArrowLeft,
+  Baby,
+  UserCheck,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
+import type { Baby as BabyType } from "@/lib/types";
 
 export default function AdminAssignPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const preselectedBabyId = searchParams.get("baby")
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const preselectedBabyId = searchParams.get("baby");
 
-  const { user, isLoading, getAllBabies, nurses, getNurseWorkload, assignBabyToNurse, refreshBabies } = useApp()
+  const {
+    user,
+    isLoading,
+    getAllBabies,
+    nurses,
+    getNurseWorkload,
+    getNurseMaxCapacity,
+    assignBabyToNurse,
+    refreshBabies,
+  } = useApp();
 
-  const [referredBabies, setReferredBabies] = useState<BabyType[]>([])
-  const [selectedBabyId, setSelectedBabyId] = useState<string>(preselectedBabyId || "")
-  const [selectedNurseId, setSelectedNurseId] = useState<string>("")
-  const [isAssigning, setIsAssigning] = useState(false)
+  const [referredBabies, setReferredBabies] = useState<BabyType[]>([]);
+  const [selectedBabyId, setSelectedBabyId] = useState<string>(
+    preselectedBabyId || ""
+  );
+  const [selectedNurseId, setSelectedNurseId] = useState<string>("");
+  const [isAssigning, setIsAssigning] = useState(false);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "admin")) {
-      router.replace("/auth")
-      return
+      router.replace("/auth");
+      return;
     }
     if (user?.role === "admin") {
-      const babies = getAllBabies().filter((b) => b.status === "referred")
-      setReferredBabies(babies)
+      const babies = getAllBabies().filter((b) => b.status === "referred");
+      setReferredBabies(babies);
       if (preselectedBabyId && babies.some((b) => b.id === preselectedBabyId)) {
-        setSelectedBabyId(preselectedBabyId)
+        setSelectedBabyId(preselectedBabyId);
       }
     }
-  }, [user, isLoading, router, getAllBabies, preselectedBabyId])
+  }, [user, isLoading, router, getAllBabies, preselectedBabyId]);
 
   const handleAssign = () => {
     if (!selectedBabyId || !selectedNurseId) {
-      toast.error("Please select both a baby and a nurse/midwife")
-      return
+      toast.error("Please select both a baby and a nurse/midwife");
+      return;
     }
 
-    setIsAssigning(true)
-    assignBabyToNurse(selectedBabyId, selectedNurseId)
-    refreshBabies()
+    setIsAssigning(true);
+    const success = assignBabyToNurse(selectedBabyId, selectedNurseId);
+    if (!success) {
+      toast.error(
+        "Selected nurse is at capacity and cannot accept new patients"
+      );
+      setIsAssigning(false);
+      return;
+    }
 
-    const baby = referredBabies.find((b) => b.id === selectedBabyId)
-    const nurse = nurses.find((n) => n.id === selectedNurseId)
+    refreshBabies();
 
-    toast.success(`${baby?.babyName} assigned to ${nurse?.name}`)
+    const baby = referredBabies.find((b) => b.id === selectedBabyId);
+    const nurse = nurses.find((n) => n.id === selectedNurseId);
+
+    toast.success(`${baby?.babyName} assigned to ${nurse?.name}`);
 
     // Remove from local list
-    setReferredBabies((prev) => prev.filter((b) => b.id !== selectedBabyId))
-    setSelectedBabyId("")
-    setSelectedNurseId("")
-    setIsAssigning(false)
-  }
+    setReferredBabies((prev) => prev.filter((b) => b.id !== selectedBabyId));
+    setSelectedBabyId("");
+    setSelectedNurseId("");
+    setIsAssigning(false);
+  };
 
   if (isLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-purple-50 to-white">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
-    )
+    );
   }
 
-  const selectedBaby = referredBabies.find((b) => b.id === selectedBabyId)
+  const selectedBaby = referredBabies.find((b) => b.id === selectedBabyId);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
@@ -83,7 +114,9 @@ export default function AdminAssignPage() {
           </Button>
           <div>
             <h1 className="text-lg font-semibold">Assign Babies</h1>
-            <p className="text-xs text-muted-foreground">{referredBabies.length} awaiting assignment</p>
+            <p className="text-xs text-muted-foreground">
+              {referredBabies.length} awaiting assignment
+            </p>
           </div>
         </div>
       </header>
@@ -96,11 +129,18 @@ export default function AdminAssignPage() {
                 <div className="mx-auto h-16 w-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
                   <CheckCircle className="h-8 w-8 text-green-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-green-700">All Caught Up!</h3>
+                <h3 className="text-lg font-semibold text-green-700">
+                  All Caught Up!
+                </h3>
                 <p className="text-muted-foreground mt-2">
-                  No babies are awaiting assignment. New referrals will appear here.
+                  No babies are awaiting assignment. New referrals will appear
+                  here.
                 </p>
-                <Button asChild variant="outline" className="mt-4 bg-transparent">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="mt-4 bg-transparent"
+                >
                   <Link href="/admin">Return to Dashboard</Link>
                 </Button>
               </CardContent>
@@ -121,11 +161,18 @@ export default function AdminAssignPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <RadioGroup value={selectedBabyId} onValueChange={setSelectedBabyId}>
+                  <RadioGroup
+                    value={selectedBabyId}
+                    onValueChange={setSelectedBabyId}
+                  >
                     <div className="space-y-3">
                       {referredBabies.map((baby) => (
                         <div key={baby.id} className="flex items-center">
-                          <RadioGroupItem value={baby.id} id={baby.id} className="sr-only" />
+                          <RadioGroupItem
+                            value={baby.id}
+                            id={baby.id}
+                            className="sr-only"
+                          />
                           <Label
                             htmlFor={baby.id}
                             className={`flex-1 flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
@@ -136,20 +183,30 @@ export default function AdminAssignPage() {
                           >
                             <div
                               className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                                baby.gender === "female" ? "bg-pink-100" : "bg-blue-100"
+                                baby.gender === "female"
+                                  ? "bg-pink-100"
+                                  : "bg-blue-100"
                               }`}
                             >
                               <Baby
-                                className={`h-5 w-5 ${baby.gender === "female" ? "text-pink-600" : "text-blue-600"}`}
+                                className={`h-5 w-5 ${
+                                  baby.gender === "female"
+                                    ? "text-pink-600"
+                                    : "text-blue-600"
+                                }`}
                               />
                             </div>
                             <div className="flex-1">
                               <p className="font-medium">{baby.babyName}</p>
                               <p className="text-sm text-muted-foreground">
-                                GA: {baby.gestationalAgeWeeks}wks | {baby.currentWeightGrams}g | {baby.motherName}
+                                GA: {baby.gestationalAgeWeeks}wks |{" "}
+                                {baby.currentWeightGrams}g | {baby.motherName}
                               </p>
                             </div>
-                            <Badge variant="outline" className="bg-orange-50 text-orange-600 border-orange-200">
+                            <Badge
+                              variant="outline"
+                              className="bg-orange-50 text-orange-600 border-orange-200"
+                            >
                               {baby.referralSource || "New"}
                             </Badge>
                           </Label>
@@ -161,60 +218,93 @@ export default function AdminAssignPage() {
               </Card>
 
               {/* Step 2: Select Nurse/Midwife */}
-              <Card className={!selectedBabyId ? "opacity-50 pointer-events-none" : ""}>
+              <Card
+                className={
+                  !selectedBabyId ? "opacity-50 pointer-events-none" : ""
+                }
+              >
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
                       2
                     </div>
                     <div>
-                      <CardTitle className="text-base">Select Nurse/Midwife</CardTitle>
+                      <CardTitle className="text-base">
+                        Select Nurse/Midwife
+                      </CardTitle>
                       <CardDescription>
-                        Choose who will care for {selectedBaby?.babyName || "this baby"}
+                        Choose who will care for{" "}
+                        {selectedBaby?.babyName || "this baby"}
                       </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <RadioGroup value={selectedNurseId} onValueChange={setSelectedNurseId}>
+                  <RadioGroup
+                    value={selectedNurseId}
+                    onValueChange={setSelectedNurseId}
+                  >
                     <div className="space-y-3">
                       {nurses.map((nurse) => {
-                        const workload = getNurseWorkload(nurse.id)
-                        const isOverloaded = workload >= 5
+                        const workload = getNurseWorkload(nurse.id);
+                        const capacity = getNurseMaxCapacity(nurse.id);
+                        const isAtCapacity = workload >= capacity;
                         return (
                           <div key={nurse.id} className="flex items-center">
-                            <RadioGroupItem value={nurse.id} id={nurse.id} className="sr-only" />
+                            <RadioGroupItem
+                              value={nurse.id}
+                              id={nurse.id}
+                              className="sr-only"
+                              disabled={isAtCapacity}
+                            />
                             <Label
                               htmlFor={nurse.id}
                               className={`flex-1 flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                                 selectedNurseId === nurse.id
                                   ? "border-primary bg-primary/5"
                                   : "border-gray-200 hover:border-primary/50"
-                              } ${isOverloaded ? "opacity-60" : ""}`}
+                              } ${
+                                isAtCapacity
+                                  ? "opacity-60 cursor-not-allowed"
+                                  : ""
+                              }`}
                             >
                               <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
                                 <UserCheck className="h-5 w-5 text-primary" />
                               </div>
                               <div className="flex-1">
                                 <p className="font-medium">{nurse.name}</p>
-                                <p className="text-sm text-muted-foreground">{nurse.facility}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {nurse.facility}
+                                </p>
                               </div>
                               <div className="text-right">
                                 <Badge
-                                  variant={isOverloaded ? "destructive" : workload >= 3 ? "secondary" : "outline"}
-                                  className={workload < 3 ? "bg-green-50 text-green-600 border-green-200" : ""}
+                                  variant={
+                                    isAtCapacity
+                                      ? "destructive"
+                                      : workload >= Math.ceil(capacity * 0.7)
+                                      ? "secondary"
+                                      : "outline"
+                                  }
+                                  className={
+                                    workload < Math.ceil(capacity * 0.7)
+                                      ? "bg-green-50 text-green-600 border-green-200"
+                                      : ""
+                                  }
                                 >
-                                  {workload} patient{workload !== 1 ? "s" : ""}
+                                  {workload} / {capacity}
                                 </Badge>
-                                {isOverloaded && (
+                                {isAtCapacity && (
                                   <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                                    <AlertCircle className="h-3 w-3" /> High load
+                                    <AlertCircle className="h-3 w-3" /> At
+                                    Capacity
                                   </p>
                                 )}
                               </div>
                             </Label>
                           </div>
-                        )
+                        );
                       })}
                     </div>
                   </RadioGroup>
@@ -234,5 +324,5 @@ export default function AdminAssignPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }
